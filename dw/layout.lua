@@ -47,7 +47,8 @@ function mainLayout:removeWindow( window )
 -- request a window to be on top, or restore it to its standard mode
 function mainLayout:setOnTop( window , onTop )
 	if not onTop then 
-		layout.windows[window].l = layout.maxWindowLayer+1
+		layout.maxWindowLayer = layout.maxWindowLayer + 1
+		layout.windows[window].l = layout.maxWindowLayer
 	else 
 		layout.windows[window].l = 10e5
 	end
