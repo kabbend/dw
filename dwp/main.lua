@@ -676,7 +676,7 @@ end
 --
 function love.load( args )
 
- dofile("pconf.lua")
+ dofile("dwpconf.lua")
 
  -- PRIMARY SERVER
  address = serverip 

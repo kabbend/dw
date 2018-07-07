@@ -99,7 +99,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local t = t or {}
   if not t.kind then self.kind = "map" else self.kind = t.kind end 
   self.class = "map"
-  self.buttons = { 'unquad', 'reduce', 'always', 'close' } 
+  self.buttons = { 'unquad', 'fullsize', 'always', 'close' } 
   self.layout = t.layout
  
   -- snapshot part of the object
@@ -154,6 +154,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   self.shader = love.graphics.newShader( glowCode ) 
   self.quad = nil
   self.translateQuadX, self.translateQuadY = 0,0
+  self.fullSize = false
 
   -- outmost limits of the current mask
   self.maskMinX, self.maskMaxX, self.maskMinY, self.maskMaxY = 100 * self.w , -100 * self.w, 100 * self.h, - 100 * self.h 
@@ -164,13 +165,15 @@ function Map:setQuad(x1,y1,x2,y2)
 	if not x1 then 
 		-- setQuad() with no arguments removes the quad 
 		self.quad = nil 
-		self.translateQuadX, self.translateQuadY = 0,0
 		self.w, self.h = self.im:getDimensions()
   		local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
   		self.snapmag = math.min( f1, f2 )
 		self.restoreX, self.restoreY, self.restoreMag = nil, nil, nil
-		self.mag = self.w / mapOpeningSize    -- we set ratio so we stick to the required opening size        
-  		self.x, self.y = self.w/2, self.h/2   -- center window
+		-- restore window size but do not move it according to where the Quad was
+		local nx,ny = self:WtoS( self.translateQuadX, self.translateQuadY )
+		local x,y = self:WtoS(0,0)
+		self:translate(x-nx,y-ny)
+		self.translateQuadX, self.translateQuadY = 0,0
 		return
 		end 
   	local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
@@ -260,17 +263,19 @@ function Map:drop( o )
 	end 
 	end
 
-function Map:maximize()
+function Map:fullsize()
 
 	-- if values are stored for restoration, we restore
 	if self.restoreX then
 		self.x, self.y, self.mag = self.restoreX, self.restoreY, self.restoreMag
 		self.restoreX, self.restoreY, self.restoreMag = nil,nil,nil,nil 
+		self.fullSize = false
 		return
 	end
 
 	-- store values for restoration
 	self.restoreX, self.restoreY, self.restoreMag = self.x, self.y, self.mag
+	self.fullSize = true 
 
 	if not self.mask or (self.mask and #self.mask == 0) then
 		-- no mask, just center the window with scale 1:0
@@ -280,7 +285,7 @@ function Map:maximize()
 		-- there are masks. We take the center of the combined masks
 		self.x, self.y = (self.maskMinX + self.maskMaxX) / 2 - self.translateQuadX, (self.maskMinY + self.maskMaxY) / 2 - self.translateQuadY
 		self.mag = 1.0
-		io.write("maximize with masks: going to " .. self.x .. " " .. self.y .. "\n")
+		io.write("fullsize with masks: going to " .. self.x .. " " .. self.y .. "\n")
 	end
 	end
 

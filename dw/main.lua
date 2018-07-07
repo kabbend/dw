@@ -1058,7 +1058,7 @@ if window then
 	-- 'tab' to get to circ or rect mode
 	-- 'lctrl + p' : remove all pawns
 	-- 'lctrl + v' : toggle visible / not visible
-	-- 'lctrl + z' : maximize/minimize (zoom)
+	-- 'lctrl + z' : zoom in / out
 	-- 'lctrl + s' : stick map
 	-- 'lctrl + u' : unstick map
 
@@ -1112,7 +1112,7 @@ if window then
 	   tcpsend( projector, "ERAS" )    
    	end
    	if key == "z" and love.keyboard.isDown("lctrl") then
-		map:maximize()
+		map:fullSize()
 	end
 
    	if key == "tab" then
