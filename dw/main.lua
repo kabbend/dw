@@ -1185,7 +1185,9 @@ function parseDirectory( t )
 		if store then table.insert( layout.snapshotWindow.snapshots[4].s, s ) end
 
 		-- check if default image 
-      		if f == 'pawnDefault.jpg' then
+      		if f == 'pawnDefault.jpg' or f == 'pawnDefault.png' or 
+      		   f == 'defaultPawn.jpg' or f == 'defaultPawn.png' 
+		then
 			defaultPawnSnapshot = s 
 		end
 

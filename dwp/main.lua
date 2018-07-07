@@ -56,7 +56,7 @@ end
   Pawn object 
 --]]
 Pawn = {}
-function Pawn:new( server, id, filename, sizex, x, y , pj )
+function Pawn:new( id, filename, sizex, x, y , pj )
 
   local new = {}
   setmetatable(new,self)
