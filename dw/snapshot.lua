@@ -35,7 +35,7 @@ end
 function snapshotBar:download()
 	-- someone has clicked on 'download' button in the button bar
 	-- this should toggle the visibility of urlWindow.
-	layout:toggleWindow(layout.uWindow)
+	--layout:toggleWindow(layout.uWindow)
 	end
 
 function snapshotBar:draw()

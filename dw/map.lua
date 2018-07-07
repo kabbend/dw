@@ -169,6 +169,8 @@ function Map:setQuad(x1,y1,x2,y2)
   		local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
   		self.snapmag = math.min( f1, f2 )
 		self.restoreX, self.restoreY, self.restoreMag = nil, nil, nil
+		self.mag = self.w / mapOpeningSize    -- we set ratio so we stick to the required opening size        
+  		self.x, self.y = self.w/2, self.h/2   -- center window
 		return
 		end 
   	local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
