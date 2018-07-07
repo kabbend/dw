@@ -204,6 +204,7 @@ function snapshotBar:click(x,y)
 	      -- 1: general image, sent it to projector
 	      if self.currentSnap == 1 then
 	      	layout.pWindow.currentImage = snapshots[self.currentSnap].s[index].im
+	      	layout.pWindow.o = nil
 	      	-- remove the 'visible' flag from maps (eventually)
 	      	atlas:removeVisible()
 		tcpsend(projector,"ERAS") 	-- remove all pawns (if any) 

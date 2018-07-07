@@ -42,9 +42,9 @@ function projectorWindow:draw()
   self:drawBack()
 
   local W,H=self.layout.W, self.layout.H
-  pzx,pzy = -( self.x - W / 2), -( self.y - H / 2)
   if self.currentImage then 
     pw, ph = self.currentImage:getDimensions()
+    pzx,pzy = -( self.x - W / 2), -( self.y - H / 2)
     -- compute magnifying factor f to fit to screen, with max = 2
     local xfactor = (self.layout.W1) / pw
     local yfactor = (self.layout.H1) / ph
@@ -52,10 +52,9 @@ function projectorWindow:draw()
     if f > 2 then f = 2 end
     pw , ph = f * pw , f * ph
     pmag = f
+    pzx,pzy = pzx +  (self.layout.W1 - pw) / 2, pzy + ( self.layout.H1 - ph ) / 2
 
     if self.o.class == "map" and self.o.map.mask and #self.o.map.mask > 0 then
-
-	io.write("proj: display map with mask")
 
 		pmask = self.o.map.mask
                 love.graphics.setColor(0,0,0)
@@ -68,13 +67,14 @@ function projectorWindow:draw()
 
         end
 
-    love.graphics.draw( self.currentImage , pzx +  (self.layout.W1 - pw) / 2, pzy + ( self.layout.H1 - ph ) / 2, 0 , f, f )
+    love.graphics.draw( self.currentImage , pzx , pzy , 0 , f, f )
 
     if self.o.class == "map" and self.o.map.mask and #self.o.map.mask > 0 then
 
                 love.graphics.setStencilTest("gequal", 2)
                 love.graphics.setColor(255,255,255)
                 love.graphics.draw( self.currentImage, pzx, pzy, 0, f, f )
+                love.graphics.setStencilTest()
     end
 
   end
@@ -118,8 +118,7 @@ function projectorWindow:drop(o)
                 s.layout:setDisplay( s , true )
                 s.layout:setFocus( s )
 		-- make it visible
-		atlas:toggleVisible( s )
-                if not atlas:isVisible( s ) then s.sticky = false end
+                if not atlas:isVisible( s ) then atlas:toggleVisible( s ); s.sticky = false end
 	end
 
 	end

@@ -15,6 +15,7 @@ function Atlas:toggleVisible( map )
 		map.sticky = false
 		-- erase snapshot !
 		self.pWindow.currentImage = nil 
+		self.pWindow.o = nil 
 	  	-- remove all pawns remotely !
 		tcpsend( projector, "ERAS")
 	  	-- send hide command to projector
@@ -23,6 +24,8 @@ function Atlas:toggleVisible( map )
 		self.visible = map 
 		-- change snapshot !
 		self.pWindow.currentImage = map.im
+		self.pWindow.o = { class = "map", map = map }
+ 
 	  	-- remove all pawns remotely !
 		tcpsend( projector, "ERAS")
 		-- send to projector
