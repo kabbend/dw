@@ -381,7 +381,7 @@ function love.update(dt)
 		if (not map) or (not map:isInside(arrowX,arrowY)) then return end
 	
 		-- check if we are just over another pawn
-		local target = map:isInsidePawn(arrowX,arrowY)
+		local target, _ = map:isInsidePawn(arrowX,arrowY)
 
 		if target and target ~= pawnMove then
 			-- we are targeting someone, draw the target in red color !
@@ -597,7 +597,7 @@ function love.mousereleased( x, y )
 		else
 
 		  -- check if we are just stopping on another pawn
-		  local target = map:isInsidePawn(x,y)
+		  local target, _ = map:isInsidePawn(x,y)
 		  if target and target ~= pawnMove then
 
 			-- we have a target
@@ -769,10 +769,9 @@ function love.mousepressed( x, y , button )
 
 		local map = window
 
-		local p = map:isInsidePawn(x,y)
+		local p, hitClicked = map:isInsidePawn(x,y)
 
-		if p then
-
+		if p and not hitClicked then
 		  -- clicking on a pawn will start an arrow that will represent
 		  -- * either an attack, if the arrow ends on another pawn
 		  -- * or a move, if the arrow ends somewhere else on the map
@@ -782,8 +781,13 @@ function love.mousepressed( x, y , button )
 	   	  mouseMove = false 
 		  arrowModeMap = nil 
 
-		-- not clicking a pawn, it's either a map move or an rect/circle mask...
+		elseif p and hitClicked then
+		  -- if hit symbol was clicked, we decrease it...
+		  local i = findPNJ( p.id )
+		  if i then rpg.hitPNJ( i ) end		 
+ 
 		elseif button == 1 then --Left click
+		  -- not clicking a pawn, it's either a map move or an rect/circle mask...
 	  		if not love.keyboard.isDown("lshift") and not love.keyboard.isDown("lctrl") 
 				and not love.keyboard.isDown("lalt") then 
 				-- want to move map

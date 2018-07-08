@@ -585,6 +585,7 @@ function Map:isInsidePawn(x,y)
   local W,H=self.layout.W,self.layout.H
   local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2) -- position of the map on the screen
   if self.pawns then
+	local hitClicked = false -- a priori
 	local indexWithMaxLayer, maxlayer = 0, 0
 	for i=1,#self.pawns do
 		-- check that this pawn is still active/alive
@@ -597,10 +598,11 @@ function Map:isInsidePawn(x,y)
 		  if x >= tx and x <= tx + sizex and y >= ty and y <= ty + sizey and self.pawns[i].layer > maxlayer then
 			maxlayer = self.pawns[i].layer
 			indexWithMaxLayer = i
+			if x <= tx + sizex / 5 and y <= ty + sizey / 5 then hitClicked = true else hitClicked = false end
 		  end
 	  	end
   	end
-	if indexWithMaxLayer == 0 then return nil else return self.pawns[ indexWithMaxLayer ] end
+	if indexWithMaxLayer == 0 then return nil, false else return self.pawns[ indexWithMaxLayer ], hitClicked end
   end
 end
 

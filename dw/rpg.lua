@@ -35,6 +35,17 @@ function rpg.loadClasses( paths )
    return array
    end
 
+-- for a given PNJ at index i, hit him !
+function rpg.hitPNJ( i )
+         if not i then return end
+         if not PNJTable[ i ] then return end
+	 PNJTable[ i ].hits = PNJTable[ i ].hits - 1
+	 if (PNJTable[ i ].hits <= 0) then
+		PNJTable[ i ].is_dead = true
+	 	PNJTable[ i ].hits = 0
+	 end 
+ end
+
 -- for a given PNJ at index i, return true if Attack or Armor button should be clickable
 -- false otherwise
 function rpg.isAttorArm( i )
