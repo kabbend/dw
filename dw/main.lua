@@ -784,7 +784,10 @@ function love.mousepressed( x, y , button )
 		elseif p and hitClicked then
 		  -- if hit symbol was clicked, we decrease it...
 		  local i = findPNJ( p.id )
-		  if i then rpg.hitPNJ( i ) end		 
+		  if i then 
+			is_dead = rpg.hitPNJ( i ) 
+			if is_dead and atlas:isVisible( map ) then tcpsend( projector , "KILL " .. p.id ) end
+			end		 
  
 		elseif button == 1 then --Left click
 		  -- not clicking a pawn, it's either a map move or an rect/circle mask...

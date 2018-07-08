@@ -35,15 +35,18 @@ function rpg.loadClasses( paths )
    return array
    end
 
--- for a given PNJ at index i, hit him !
+-- Hit the PNJ at index i
+-- return a boolean true if dead... 
 function rpg.hitPNJ( i )
-         if not i then return end
-         if not PNJTable[ i ] then return end
+         if not i then return false end
+         if not PNJTable[ i ] then return false end
 	 PNJTable[ i ].hits = PNJTable[ i ].hits - 1
 	 if (PNJTable[ i ].hits <= 0) then
 		PNJTable[ i ].is_dead = true
 	 	PNJTable[ i ].hits = 0
+		return true
 	 end 
+	 return false
  end
 
 -- for a given PNJ at index i, return true if Attack or Armor button should be clickable
