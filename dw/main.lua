@@ -1198,12 +1198,17 @@ function parseDirectory( t )
 			defaultPawnSnapshot = s 
 		end
 
-		-- check if corresponds to a PNJ template as well
+		-- check if corresponds to a PNJ template as well, either as snapshot or as popup
 		for i=1,#RpgClasses do
 			if RpgClasses[i].image == f then 
 				RpgClasses[i].snapshot = s 
 				templateArray[RpgClasses[i].class].snapshot = s
 				io.write("store image '" .. f .. "' as Snapshot for class " .. RpgClasses[i].class .. "\n")
+			end
+			if RpgClasses[i].popup == f then 
+				RpgClasses[i].snapshotPopup = s 
+				templateArray[RpgClasses[i].class].snapshotPopup = s
+				io.write("store image '" .. f .. "' as Popup for class " .. RpgClasses[i].class .. "\n")
 			end
 		end
 

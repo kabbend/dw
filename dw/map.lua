@@ -401,11 +401,17 @@ function Map:draw()
     self:drawBar()
     self:drawResize()
 
-    -- print minimize/maximize icon
-    --local tx, ty = x + self.w / self.mag - theme.iconSize , y + 3 
-    --tx, ty = math.min(tx,W-theme.iconSize), math.max(ty,0)
-    --love.graphics.draw( theme.iconReduce, tx, ty )
-    
+    -- print popup if needed
+    love.graphics.setColor(255,255,255)
+    local x,y = love.mouse.getPosition()
+    local p = self:isInsidePawn(x,y)
+    if p then
+ 	local i = findPNJ( p.id )
+	if i and PNJTable[ i ].snapshotPopup then		
+		love.graphics.draw( PNJTable[ i ].snapshotPopup.im , x, y )
+	end
+    end   
+ 
 end
 
 function Map:getFocus() 
