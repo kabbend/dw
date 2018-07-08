@@ -7,25 +7,21 @@ local theme = require 'theme'
 --
 
 -- array of PNJ templates (loaded from data file)
-local templateArray   = {}
+templateArray   = {}
 
 local rpg = {}
 
--- load PNJ templates from data file, return a list of names (to be used in dropdown listbox) 
--- and an (number-sorted) array of classes
--- argument t is a table (list) of paths to try
+-- load PNJ templates from data file, return an array of classes
+-- argument is a table (list) of paths to try
 function rpg.loadClasses( paths )
 
-   local opt = {}
    local array = {}
-   local i = 1
    Class = function( t )
   		if not t.class then error("need a class attribute (string value) for each class entry") end
 		local already_exist = false
 		if templateArray[t.class] then already_exist = true end
   		templateArray[t.class] = t
-  		if not already_exist and not t.PJ then          -- only display PNJ classes in Dropdown list, not PJ
-    			opt[i] = t.class ; i = i  + 1
+  		if not already_exist then 
 			table.insert( array, t )
   		end
 		end
@@ -36,7 +32,7 @@ function rpg.loadClasses( paths )
 	if f then f() end 
    end
 
-   return opt, array
+   return array
    end
 
 -- for a given PNJ at index i, return true if Attack or Armor button should be clickable
@@ -65,86 +61,17 @@ function rpg.isAttorArm( i )
  -- Return nothing, but activate the corresponding draw flag and timer so it is used in
  -- draw()
  -- return the number of dices actually sent (may be zero)
+ --
+ -- DEPRECATED, will be deleted
  -- 
  function rpg.rollAttack( rollType )
-
-	 local focus = layout.combatWindow.focus
-
-         if not focus then return 0 end -- no one with focus, cannot roll
-
-         local index = focus
-
-         -- when a PJ is selected, we do not roll for him but for it's enemy, provided there is only one
-         if (PNJTable[ index ].PJ) then
-                 local count = 0
-                 local oneid = nil
-                 for k,v in pairs(PNJTable[index].attackers) do
-                         if v then oneid = k; count = count + 1 end
-                 end
-                 if (count ~= 1) or (not oneid) then return 0 end
-                 index = findPNJ(oneid)
-                 -- index now points to the line we want
-         end
-
-         -- set global variable so we know if we must draw white or black dices
-         diceKind = rollType
-
-         -- how many of them ?
-         local num
-         if rollType == "attack" then
-                 num = PNJTable[ index ].roll:getDamage()
-         elseif rollType == "armor" then
-                 num = PNJTable[ index ].armor
-         end
-
-         if num == 0 then return 0 end
-
-	 drawDicesKind = "d6"
-	 launchDices("d6",num)
-
-	 return num
-
+	 return 0 
 	 end
 
+ --
+ -- DEPRECATED, will be deleted
+ -- 
 function launchDices( kind, num )
-
-         math.randomseed( os.time() )
-
-         -- prepare the dice box simulation
-	if kind == "d6" then
-		box:set(10,10,5,20,0.8,2,0.01)
-	elseif kind == "d20" then
-		box:set(10,10,4,100,0.8,2,0.01)
-	end
-
-         dice = {}
-         for i=1,num do
-		if kind == "d6" then
-                 	table.insert(dice,
-                 		{ star=newD6star(1.5):set({math.random(10),math.random(10),math.random(10)}, -- position
-                                           {-math.random(8,40),-math.random(8,40),-10}, -- velocity
-                                           {math.random(10),math.random(10),math.random(10)}), -- angular mvmt
-                   	die=clone(d6,{material=light.plastic,color={81,0,255,255},text={255,255,255},shadow={20,0,0,190}}) })
-		elseif kind == "d20" then
-                 	table.insert(dice,
-                 		{ star=newD20star(4):set({math.random(10),math.random(10),math.random(1)}, -- position
-                                           {-math.random(8,40),-math.random(8,40),-10}, -- velocity
-                                           {math.random(10),math.random(10),math.random(10)}), -- angular mvmt
-                   	die=clone(d20,{material=light.plastic,color={81,0,255,255},text={255,255,255},shadow={20,0,0,190}}) })
-		end
-	 end
-
-         for i=1,#dice do box[i]=dice[i].star end
-         for i=#dice+1,40 do box[i]=nil end -- FIXME, hardcoded, ugly...
-         box.n = #dice
-
-         -- give go to draw them
-         drawDicesTimer = 0
-         drawDices = true
-         drawDicesResult = false
-         lastDiceSum = 0
-         diceStableTimer = 0
-
          end
 
 	 
@@ -294,6 +221,7 @@ local function PNJConstructor( template )
   aNewPNJ.PJ 		  = template.PJ or false	-- is it a PJ or PNJ ?
   aNewPNJ.done		  = false 			-- has played this round ?
   aNewPNJ.is_dead         = false  			-- so far 
+  aNewPNJ.image	  	  = template.image or ''	-- image (and some other information) for the character 
   aNewPNJ.snapshot	  = template.snapshot		-- image (and some other information) for the character 
   aNewPNJ.sizefactor	  = template.size or 1.0
 
@@ -469,12 +397,7 @@ function rpg.changeDefense( i, n, m )
 end
 
 -- create and store a new PNJ in PNJTable{}, based on a given class,
--- return the id of the new PNJ generated, nil otherwise (because limit is reached).
---
--- If a PNJ with same class was already generated before, then keeps
--- the same INITIATIVE value (so all PNJs with same class are sorted
--- together)
---
+-- return the id of the new PNJ generated
 -- The newly created PNJ is stored at the end of the PNJTable{} for
 -- the moment
 function rpg.generateNewPNJ(current_class)
@@ -482,37 +405,10 @@ function rpg.generateNewPNJ(current_class)
   -- generate a new one, at current index, with new ID
   PNJTable[#PNJTable+1] = PNJConstructor( templateArray[current_class] )
 
-  -- display it's class and INIT value (rest will be displayed when start button is pressed)
-  local pnj = PNJTable[#PNJTable]
-  
   -- set a default image if needed
+  local pnj = PNJTable[#PNJTable]
   if not pnj.snapshot then pnj.snapshot = defaultPawnSnapshot end
-
-  if (pnj.PJ) then
-
-    pnj.final_initiative = pnj.initiative;
-
-  else
-
-    -- check if same class has already been generated before. If so, take same initiative value
-    -- otherwise, assign a new value (common to the whole class)
-    -- the new value is INITIATIVE + 1D6
-    local found = false
-    for i=1,#PNJTable - 1 do
-      if (PNJTable[i].class == current_class) then 
-        found = true; 
-        pnj.final_initiative = PNJTable[i].final_initiative
-      end
-    end
-    if not found then
-      math.randomseed( os.time() )
-      -- small trick: we do not add 1d6, but 1d6 plus a fraction between 0-1
-      -- and we always remove this fraction (math.floor) when we display the value
-      -- In this way, 2 different classes with same (apparent) initiative are sorted nicely, and not mixed
-      pnj.final_initiative = math.random(pnj.initiative + 1, pnj.initiative + 6) + math.random()
-    end
-  end
-
+  io.write("generating a new character for class " .. current_class .. " with ID " .. pnj.id .. "\n")
   return pnj.id 
 end
 

@@ -1168,21 +1168,21 @@ function parseDirectory( t )
 	if string.sub(f,-4) == '.jpg' or string.sub(f,-4) == '.png'  then
 
 		local s = Snapshot:new{ filename = path .. sep .. f, size=layout.snapshotSize }
-		local store = true
 
         	if string.sub(f,1,4) == 'pawn' then
-		-- check if corresponds to a known PJ. In that case, do not
-		-- store it in the snapshot list, as it is supposed to be unique
+		-- check if corresponds to a known PJ
 			local pjname = string.sub(f,5, f:len() - 4 )
 			io.write("Looking for a PJ named " .. pjname .. "\n")
-			local index = findPNJByClass( pjname ) 
-			if index then 
-				PNJTable[index].snapshot = s  
-				store = false
+			for i=1,#RpgClasses do
+			if RpgClasses[i].class == pjname then 
+				RpgClasses[i].snapshot = s 
+				templateArray[pjname].snapshot = s
+				io.write("store image '" .. f .. "' as Snapshot for PJ " .. RpgClasses[i].class .. "\n")
 			end
-		end	
-   
-		if store then table.insert( layout.snapshotWindow.snapshots[4].s, s ) end
+			end
+  		end
+ 
+		--table.insert( layout.snapshotWindow.snapshots[4].s, s )
 
 		-- check if default image 
       		if f == 'pawnDefault.jpg' or f == 'pawnDefault.png' or 
@@ -1195,28 +1195,34 @@ function parseDirectory( t )
 		for i=1,#RpgClasses do
 			if RpgClasses[i].image == f then 
 				RpgClasses[i].snapshot = s 
-				io.write("store image for class " .. RpgClasses[i].class .. "\n")
+				templateArray[RpgClasses[i].class].snapshot = s
+				io.write("store image '" .. f .. "' as Snapshot for class " .. RpgClasses[i].class .. "\n")
 			end
 		end
 
 	end
- 
+
       elseif f == 'pawnDefault.jpg' then
 
 	defaultPawnSnapshot = Snapshot:new{ filename = path .. sep .. f , size=layout.snapshotSize }
-	table.insert( layout.snapshotWindow.snapshots[4].s, defaultPawnSnapshot ) 
+	--table.insert( layout.snapshotWindow.snapshots[4].s, defaultPawnSnapshot ) 
 
       elseif string.sub(f,-4) == '.jpg' or string.sub(f,-4) == '.png'  then
 
         if string.sub(f,1,4) == 'pawn' then
 
 		local s = Snapshot:new{ filename = path .. sep .. f, size=layout.snapshotSize }
-		table.insert( layout.snapshotWindow.snapshots[4].s, s ) 
+		--table.insert( layout.snapshotWindow.snapshots[4].s, s ) 
 		
 		local pjname = string.sub(f,5, f:len() - 4 )
-		io.write("Looking for PJ " .. pjname .. "\n")
-		local index = findPNJByClass( pjname ) 
-		if index then PNJTable[index].snapshot = s  end
+		io.write("Looking for a PJ named " .. pjname .. "\n")
+		for i=1,#RpgClasses do
+			if RpgClasses[i].class == pjname then 
+				RpgClasses[i].snapshot = s 
+				templateArray[RpgClasses[i].class].snapshot = s
+				io.write("store image '" .. f .. "' as Snapshot for PJ " .. RpgClasses[i].class .. "\n")
+			end
+		end
 
 	elseif string.sub(f,1,3) == 'map' then
 
@@ -1241,11 +1247,14 @@ function parseDirectory( t )
     -- all classes are loaded with a snapshot
     -- add them to snapshotBar
     for i=1,#RpgClasses do
-	if not RpgClasses[i].snapshot then RpgClasses[i].snapshot = defaultPawnSnapshot end
-	if not RpgClasses[i].PJ then table.insert( layout.snapshotWindow.snapshots[3].s, RpgClasses[i].snapshot ) end
+	if not RpgClasses[i].snapshot then 
+		io.write("-- No snapshot for class " .. RpgClasses[i].class .. ", setting default one.\n"); 
+		RpgClasses[i].snapshot = defaultPawnSnapshot
+		templateArray[RpgClasses[i].class].snapshot = defaultPawnSnapshot 
+	 end
+	table.insert( layout.snapshotWindow.snapshots[3].s, RpgClasses[i].snapshot ) 
     end
 
-    
 end
 
 function init() 
@@ -1338,7 +1347,7 @@ function init()
     local directory, scenarioDirectory = baseDirectory, fadingDirectory
     if __WINDOWS__ then directory, scenarioDirectory = baseDirectoryCp1252, fadingDirectoryCp1252 end
 
-    _, RpgClasses = rpg.loadClasses{ 	directory .. sep .. "data" , 
+    RpgClasses = rpg.loadClasses{ 	directory .. sep .. "data" , 
 			         	directory .. sep .. scenarioDirectory .. sep .. "data" } 
 
     if not RpgClasses or #RpgClasses == 0 then 
@@ -1349,7 +1358,7 @@ function init()
 
     	-- create PJ automatically (1 instance of each!)
     	-- later on, an image might be attached to them, if we find one
-    	rpg.createPJ()
+    	--rpg.createPJ()
 
     end
 
