@@ -99,7 +99,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local t = t or {}
   if not t.kind then self.kind = "map" else self.kind = t.kind end 
   self.class = "map"
-  self.buttons = { 'unquad', 'fullsize', 'always', 'close' } 
+  self.buttons = { 'unquad', 'fullsize', 'kill', 'wipe', 'always', 'close' } 
   self.layout = t.layout
  
   -- snapshot part of the object
@@ -261,6 +261,20 @@ function Map:drop( o )
 			end
 		end
 	end 
+	end
+
+function Map:killAll() 
+	PNJTable = {}
+	if atlas:isVisible(self) then tcpsend( projector, "ERAS" ); end
+  	end
+
+function Map:wipe()
+	if atlas:isVisible(self) then
+	  for i=1,#PNJTable do
+		if PNJTable[i].is_dead then tcpsend( projector, "ERAP " .. PNJTable[i].id ); end
+	  end
+	end
+	rpg.removeDeadPNJ()
 	end
 
 function Map:fullsize()

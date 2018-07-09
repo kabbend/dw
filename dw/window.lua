@@ -31,7 +31,7 @@ local Window = {class = "window", w = 0, h = 0, mag = 1.0, x = 0, y = 0 , title 
 		zoomable = false ,							-- can we change the zoom ?
 		buttons = { 'close' },							-- ordered list of buttons (when applicable)
 											-- among:
-											-- 'close', 'always', 'unquad', 'fulsize'
+											-- 'close', 'always', 'unquad', 'fulsize', 'kill', 'wipe'
 		movable = true ,							-- can we move the window ?
 	   	sticky = false, stickX = 0, stickY = 0, stickmag = 0 , 			-- FIXME: should be in map ?
 		markForClosure = false,							-- event to close the window
@@ -168,6 +168,12 @@ function Window:drawBar( )
    if self.buttons[i] == 'unquad' and self.quad then
    	love.graphics.draw( theme.iconExpand, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
    end
+   if self.buttons[i] == 'kill' then
+   	love.graphics.draw( theme.iconKill, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   end
+   if self.buttons[i] == 'wipe' then
+   	love.graphics.draw( theme.iconWipe, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   end
    if self.buttons[i] == 'fullsize' then
 	if self.fullSize then
    		love.graphics.draw( theme.iconReduce, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
@@ -253,6 +259,12 @@ function Window:click(x,y)
 		if (button == 'fullsize') then 	
 			-- click on Maximize/Minimize at upper right corner 
 			self:fullsize()	
+		end
+		if (button == 'kill') then 	
+			self:killAll()	
+		end
+		if (button == 'wipe') then 	
+			self:wipe()	
 		end
 
  	end

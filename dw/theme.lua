@@ -26,6 +26,8 @@ theme.iconNew		= love.graphics.newImage( "icons/new.png" )
 theme.iconCentre	= love.graphics.newImage( "icons/centre.png" )
 theme.iconStop		= love.graphics.newImage( "icons/stop.png" )
 theme.iconLink		= love.graphics.newImage( "icons/link.png" )
+theme.iconWipe		= love.graphics.newImage( "icons/wipe16x16.png" )
+theme.iconKill		= love.graphics.newImage( "icons/kill16x16.png" )
 
 return theme
 
