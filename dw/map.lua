@@ -402,15 +402,17 @@ function Map:draw()
     self:drawResize()
 
     -- print popup if needed
-    love.graphics.setColor(255,255,255)
-    local x,y = love.mouse.getPosition()
-    local p = self:isInsidePawn(x,y)
-    if p then
+    if layout:getFocus() == self then
+     love.graphics.setColor(255,255,255)
+     local x,y = love.mouse.getPosition()
+     local p , _ , popup = self:isInsidePawn(x,y)
+     if p and popup then
  	local i = findPNJ( p.id )
 	if i and PNJTable[ i ].snapshotPopup then		
 		love.graphics.draw( PNJTable[ i ].snapshotPopup.im , x, y )
 	end
-    end   
+     end   
+    end
  
 end
 
@@ -592,6 +594,7 @@ function Map:isInsidePawn(x,y)
   local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2) -- position of the map on the screen
   if self.pawns then
 	local hitClicked = false -- a priori
+	local popup = false -- a priori
 	local indexWithMaxLayer, maxlayer = 0, 0
 	for i=1,#self.pawns do
 		-- check that this pawn is still active/alive
@@ -605,10 +608,11 @@ function Map:isInsidePawn(x,y)
 			maxlayer = self.pawns[i].layer
 			indexWithMaxLayer = i
 			if x <= tx + sizex / 5 and y <= ty + sizey / 5 then hitClicked = true else hitClicked = false end
+			if x <= tx + sizex / 5 and y >= ty + sizey / 5 and y <= ty + 2 * sizey / 5 then popup = true else popup = false end
 		  end
 	  	end
   	end
-	if indexWithMaxLayer == 0 then return nil, false else return self.pawns[ indexWithMaxLayer ], hitClicked end
+	if indexWithMaxLayer == 0 then return nil, false, false else return self.pawns[ indexWithMaxLayer ], hitClicked, popup end
   end
 end
 
