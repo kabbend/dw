@@ -1267,6 +1267,28 @@ function parseDirectory( t )
 	table.insert( layout.snapshotWindow.snapshots[3].s, RpgClasses[i].snapshot ) 
     end
 
+    -- before returning, sort the class snapshot bar: PJ first, then PNJ, all in alphabetical order
+    -- Comparison function
+    function compare(x, y)
+      if x[1].PJ and not y[1].PJ then return true end
+      if not x[1].PJ and y[1].PJ then return false end
+      return x[1].class < y[1].class 
+    end
+
+    -- Step 1: Merge in pairs
+    for i,v in ipairs(RpgClasses) do
+      RpgClasses[i] = {RpgClasses[i], layout.snapshotWindow.snapshots[3].s[i]}
+    end
+
+    -- Step 2: Sort
+    table.sort(RpgClasses, compare)
+
+    -- Step 3: Unmerge pairs
+    for i, v in ipairs(RpgClasses) do
+      RpgClasses[i] = v[1]
+      layout.snapshotWindow.snapshots[3].s[i] = v[2]
+    end
+
 end
 
 function init() 
