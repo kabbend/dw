@@ -421,8 +421,13 @@ function Map:draw()
      local x,y = love.mouse.getPosition()
      local p , _ , popup = self:isInsidePawn(x,y)
      if p and popup then
+	-- we are hovering the popup zone of a pawn 
+	-- Show popup now if there is a popup associated with that Pawn
  	local i = findPNJ( p.id )
 	if i and PNJTable[ i ].snapshotPopup then		
+		-- compute x,y to show the popup window so it does not exceed the window limits
+		if x + PNJTable[ i ].snapshotPopup.w > W then x = (W - PNJTable[ i ].snapshotPopup.w) end
+		if y + PNJTable[ i ].snapshotPopup.h > H then y = (H - PNJTable[ i ].snapshotPopup.h) end
 		love.graphics.draw( PNJTable[ i ].snapshotPopup.im , x, y )
 	end
      end   
