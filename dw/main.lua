@@ -1319,15 +1319,15 @@ function init()
 
     -- do not display them yet
     -- basic windows (as opposed to maps, for instance) are also stored by name, so we can retrieve them easily elsewhere in the code
-    layout:addWindow( pWindow , 	false, "pWindow" )
-    layout:addWindow( snapshotWindow , 	false, "snapshotWindow" )
+    layout:addWindow( pWindow , 	true, "pWindow" )
+    layout:addWindow( snapshotWindow , 	true, "snapshotWindow" )
     layout:addWindow( notifWindow , 	false, "notificationWindow" )
     layout:addWindow( dialogWindow , 	false, "dialogWindow" )
     layout:addWindow( helpWindow , 	false, "helpWindow" ) 
     layout:addWindow( dataWindow , 	false, "dataWindow" )
 
-    layout:addWindow( storyWindow , 	true , "storyWindow" )
-    layout:addWindow( actionWindow , 	true , "actionWindow" )
+    layout:addWindow( storyWindow , 	false, "storyWindow" )
+    layout:addWindow( actionWindow , 	false, "actionWindow" )
 
     io.write("base directory   : " .. baseDirectory .. "\n") ; layout.notificationWindow:addMessage("base directory : " .. baseDirectory .. "\n")
     io.write("scenario directory : " .. fadingDirectory .. "\n") ; layout.notificationWindow:addMessage("scenario : " .. fadingDirectory .. "\n")
