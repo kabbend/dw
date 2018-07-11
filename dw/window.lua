@@ -60,7 +60,6 @@ function Window:new( t )
 end
 
 function Window:getButtonByPosition(position)
-    io.write("getButtonByPosition, receiving " .. position .. " with array size " .. #self.buttons )
     if (position <= 0 or position > #self.buttons) then return nil end
     return self.buttons[position]
 end

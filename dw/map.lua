@@ -168,7 +168,7 @@ function Map:setQuad(x1,y1,x2,y2)
 		self.w, self.h = self.im:getDimensions()
   		local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
   		self.snapmag = math.min( f1, f2 )
-		self.restoreX, self.restoreY, self.restoreMag = nil, nil, nil
+		--self.restoreX, self.restoreY, self.restoreMag = nil, nil, nil
 		-- restore window size but do not move it according to where the Quad was
 		local nx,ny = self:WtoS( self.translateQuadX, self.translateQuadY )
 		local x,y = self:WtoS(0,0)
@@ -193,7 +193,7 @@ function Map:setQuad(x1,y1,x2,y2)
 	self:translate(px-nx,py-ny)
   	local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
   	self.snapmag = math.min( f1, f2 )
-	self.restoreX, self.restoreY, self.restoreMag = self.x, self.y, self.mag
+	--self.restoreX, self.restoreY, self.restoreMag = self.x, self.y, self.mag
 	end
 
 -- a Map move or zoom is a  bit more than a window move or zoom: 
@@ -286,7 +286,7 @@ function Map:fullsize()
 		self.fullSize = false
 		if atlas:isVisible(self) and not self.sticky then 
 			tcpsend( projector, "MAGN " .. 1/self.mag ) 
-			tcpsend( projector, "CHXY " .. math.floor(self.x) .. " " .. math.floor(self.y) ) 
+			tcpsend( projector, "CHXY " .. math.floor(self.x+self.translateQuadX) .. " " .. math.floor(self.y+self.translateQuadY) )
 		end
 		return
 	end
@@ -307,7 +307,7 @@ function Map:fullsize()
 	end
 	if atlas:isVisible(self) and not self.sticky then 
 		tcpsend( projector, "MAGN " .. 1/self.mag ) 
-		tcpsend( projector, "CHXY " .. math.floor(self.x) .. " " .. math.floor(self.y) ) 
+		tcpsend( projector, "CHXY " .. math.floor(self.x+self.translateQuadX) .. " " .. math.floor(self.y+self.translateQuadY) ) 
 	end
 
 	end
