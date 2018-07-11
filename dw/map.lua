@@ -284,7 +284,10 @@ function Map:fullsize()
 		self.x, self.y, self.mag = self.restoreX, self.restoreY, self.restoreMag
 		self.restoreX, self.restoreY, self.restoreMag = nil,nil,nil,nil 
 		self.fullSize = false
-		if atlas:isVisible(self) and not self.sticky then tcpsend( projector, "MAGN " .. 1/self.mag ) end
+		if atlas:isVisible(self) and not self.sticky then 
+			tcpsend( projector, "MAGN " .. 1/self.mag ) 
+			tcpsend( projector, "CHXY " .. math.floor(self.x) .. " " .. math.floor(self.y) ) 
+		end
 		return
 	end
 
@@ -302,7 +305,10 @@ function Map:fullsize()
 		self.mag = 1.0
 		io.write("fullsize with masks: going to " .. self.x .. " " .. self.y .. "\n")
 	end
-	if atlas:isVisible(self) and not self.sticky then tcpsend( projector, "MAGN " .. 1/self.mag ) end
+	if atlas:isVisible(self) and not self.sticky then 
+		tcpsend( projector, "MAGN " .. 1/self.mag ) 
+		tcpsend( projector, "CHXY " .. math.floor(self.x) .. " " .. math.floor(self.y) ) 
+	end
 
 	end
 
