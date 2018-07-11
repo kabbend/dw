@@ -8,7 +8,7 @@ function io.write( data ) if debug then oldiowrite( data ) end end
 
 -- projectorWindow class
 -- a projectorWindow is a window which displays images. it is not zoomable
-local projectorWindow = Window:new{ class = "projector" , title = "PROJECTOR" , buttons = { 'always', 'close' } }
+local projectorWindow = Window:new{ class = "projector" , title = "DISPLAY" , buttons = { 'always', 'close' } }
 
 function projectorWindow:new( t ) -- create from w, h, x, y
   local new = t or {}

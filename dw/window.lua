@@ -142,42 +142,44 @@ function Window:drawBar( )
  local title = string.sub( self.title , 1, numChar ) 
 
  -- draw bar
- if self == self.layout:getFocus() then love.graphics.setColor(color('orange')) else love.graphics.setColor(color('grey')) end
+ if self == self.layout:getFocus() then love.graphics.setColor(color('selected')) else love.graphics.setColor(color('grey')) end
  local lzx,lzy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
  local zx,zy = lzx, math.max(lzy,theme.iconSize) 
- love.graphics.rectangle( "fill", zx - border , zy - theme.iconSize , ((self.w) / self.mag)+2*border , theme.iconSize )
+ local margin = 1
+ love.graphics.rectangle( "fill", zx - border , zy - theme.iconSize , ((self.w) / self.mag)+2*border , theme.iconSize + margin * 2)
 
  -- draw icons. Positions are expressed from right to left, 1 is the rightmost one
  local position = #self.buttons
  love.graphics.setFont(theme.fontRound)
+ love.graphics.setColor(255,255,255)
 
  for i=1,#self.buttons do
    local zxf = math.min(zx + self.w / self.mag, W)
 
    if self.buttons[i] == 'close' then
-   	love.graphics.draw( theme.iconClose, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   	love.graphics.draw( theme.iconClose, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
    if self.buttons[i] == 'always' then
      if self.alwaysOnTop then 	-- always on top, in position 2
- 	love.graphics.draw( theme.iconOnTopActive, zxf - position*theme.iconSize+3 , zy - theme.iconSize+3)
+ 	love.graphics.draw( theme.iconOnTopActive, zxf - position*theme.iconSize+ margin , zy - theme.iconSize+ margin)
      else
- 	love.graphics.draw( theme.iconOnTopInactive, zxf - position*theme.iconSize+3 , zy - theme.iconSize+3)
+ 	love.graphics.draw( theme.iconOnTopInactive, zxf - position*theme.iconSize+ margin , zy - theme.iconSize+ margin)
      end
    end
    if self.buttons[i] == 'unquad' and self.quad then
-   	love.graphics.draw( theme.iconExpand, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   	love.graphics.draw( theme.iconExpand, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
    if self.buttons[i] == 'kill' then
-   	love.graphics.draw( theme.iconKill, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   	love.graphics.draw( theme.iconKill, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
    if self.buttons[i] == 'wipe' then
-   	love.graphics.draw( theme.iconWipe, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   	love.graphics.draw( theme.iconWipe, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
    if self.buttons[i] == 'fullsize' then
 	if self.fullSize then
-   		love.graphics.draw( theme.iconReduce, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   		love.graphics.draw( theme.iconReduce, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	else
-   		love.graphics.draw( theme.iconFullSize, zxf - position * theme.iconSize + 3, zy - theme.iconSize + 3)
+   		love.graphics.draw( theme.iconFullSize, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	end
    end
    position=position-1
@@ -199,13 +201,15 @@ end
 function Window:drawResize()
    local W,H=self.layout.W, self.layout.H
    local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
-   love.graphics.draw( theme.iconResize, zx + self.w / self.mag - theme.iconSize + 3, zy + self.h/self.mag - theme.iconSize + 3)
+   love.graphics.setColor(255,255,255)
+   --love.graphics.rectangle( "fill", zx + self.w / self.mag - theme.iconSize - 2, zy + self.h/self.mag - theme.iconSize - 2, theme.iconSize + 2, theme.iconSize + 2 )
+   love.graphics.draw( theme.iconResize, zx + self.w / self.mag - theme.iconSize - 1, zy + self.h/self.mag - theme.iconSize - 1 )
 end
 
 function Window:drawBack()
   local W,H=self.layout.W, self.layout.H
   local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
-  if self == self.layout:getFocus() then love.graphics.setColor(color('orange')) else love.graphics.setColor(color('grey')) end
+  if self == self.layout:getFocus() then love.graphics.setColor(color('selected')) else love.graphics.setColor(color('grey')) end
   love.graphics.setLineWidth(border*2);
   love.graphics.rectangle( "line", zx, zy , ((self.w) / self.mag), (self.h / self.mag) )  
   love.graphics.setLineWidth(1);
