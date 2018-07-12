@@ -384,11 +384,16 @@ function Map:draw()
 		       		love.graphics.setColor(0,0,0)  
 				local f = map.basePawnSize / 5
 				local s = f / 22 
-		       		love.graphics.rectangle( "fill", zx, zy, f / map.mag, 2 * f / map.mag)
-		       		love.graphics.setColor(255,255,255) 
+		       		love.graphics.setColor(0,0,0) 
+		       		love.graphics.rectangle( "fill", zx, zy, f / map.mag, 3 * f / map.mag)
+		       		love.graphics.setColor(theme.color.green) 
+		       		love.graphics.rectangle( "fill", zx, zy + f / map.mag, f / map.mag, f / map.mag)
         			love.graphics.setFont(theme.fontSearch)
+		       		love.graphics.setColor(255,255,255) 
 				love.graphics.print( PNJTable[index].hits , zx, zy , 0, s/map.mag, s/map.mag )
-				love.graphics.print( PNJTable[index].id , zx, zy + f/map.mag , 0, s/map.mag, s/map.mag )
+				love.graphics.print( PNJTable[index].id , zx, zy + 2 * f/map.mag , 0, s/map.mag, s/map.mag )
+		       		love.graphics.setColor(0,0,0) 
+				love.graphics.print( "D" .. PNJTable[index].armor , zx, zy + f/map.mag, 0, s/map.mag, s/map.mag )
 	     	     	end
 		     end
 	     end
