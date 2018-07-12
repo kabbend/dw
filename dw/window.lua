@@ -31,7 +31,7 @@ local Window = {class = "window", w = 0, h = 0, mag = 1.0, x = 0, y = 0 , title 
 		zoomable = false ,							-- can we change the zoom ?
 		buttons = { 'close' },							-- ordered list of buttons (when applicable)
 											-- among:
-											-- 'close', 'always', 'unquad', 'fulsize', 'kill', 'wipe'
+											-- 'close', 'always', 'unquad', 'fulsize', 'kill', 'wipe', 'eye', 'scotch'
 		movable = true ,							-- can we move the window ?
 	   	sticky = false, stickX = 0, stickY = 0, stickmag = 0 , 			-- FIXME: should be in map ?
 		markForClosure = false,							-- event to close the window
@@ -175,6 +175,20 @@ function Window:drawBar( )
    if self.buttons[i] == 'wipe' then
    	love.graphics.draw( theme.iconWipe, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
+   if self.buttons[i] == 'eye' then
+	if self.class == "map" and atlas:isVisible(self) then
+   		love.graphics.draw( theme.iconVisible, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	else
+   		love.graphics.draw( theme.iconInvisible, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	end
+   end
+   if self.buttons[i] == 'scotch' and atlas:isVisible(self) then -- sticky icon only when map is visible
+	if self.class == "map" and self.sticky then
+   		love.graphics.draw( theme.iconSticky, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	else
+   		love.graphics.draw( theme.iconUnSticky, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	end
+   end
    if self.buttons[i] == 'fullsize' then
 	if self.fullSize then
    		love.graphics.draw( theme.iconReduce, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
@@ -232,9 +246,7 @@ function Window:click(x,y)
 	if x >= zxf - nButtons * theme.iconSize and x <= zxf and y >= zyf - theme.iconSize and y <= zyf then
 		-- click on a button . Which one ?
 		local position = math.floor((x - (zxf - nButtons * theme.iconSize)) / theme.iconSize) + 1
-		io.write("position=" .. position )
 		local button = self:getButtonByPosition(position)
-		io.write("button="..button )
 
 		if (button == 'close') then 	
 			-- click on Close
@@ -268,6 +280,20 @@ function Window:click(x,y)
 		end
 		if (button == 'wipe') then 	
 			self:wipe()	
+		end
+		if (button == 'eye') then 	
+			local map = self
+			atlas:toggleVisible( map )
+                	if not atlas:isVisible( map ) then map.sticky = false else
+                  		layout.notificationWindow:addMessage("Map " .. map.displayFilename .. " is now visible to players. All your changes will be relayed to them")
+                	end
+		end
+		if (button == 'scotch') then 	
+			if self.sticky then 
+				self:setUnsticky()	
+			else
+				self:setSticky()
+			end
 		end
 
  	end

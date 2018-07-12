@@ -99,7 +99,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local t = t or {}
   if not t.kind then self.kind = "map" else self.kind = t.kind end 
   self.class = "map"
-  self.buttons = { 'unquad', 'fullsize', 'kill', 'wipe', 'always', 'close' } 
+  self.buttons = { 'unquad', 'scotch', 'eye', 'fullsize', 'kill', 'wipe', 'always', 'close' } 
   self.layout = t.layout
  
   -- snapshot part of the object
@@ -639,6 +639,33 @@ function Map:isInsidePawn(x,y)
   	end
 	if indexWithMaxLayer == 0 then return nil, false, false else return self.pawns[ indexWithMaxLayer ], hitClicked, popup end
   end
+end
+
+-- set or unset sticky mode
+function Map:setSticky()
+		local map = self
+		if not atlas:isVisible(map) then return end -- if map is not visible, do nothing
+                if not map.sticky then
+                        -- we enter sticky mode. Normally, the projector is fully aligned already, so
+                        -- we just save the current status for future restoration
+                        map.stickX, map.stickY, map.stickmag = map.x, map.y, map.mag
+                        map.sticky = true
+                        layout.notificationWindow:addMessage("Map " .. map.displayFilename .. " is now sticky")
+                else
+                        -- we were already sticky, with a different status probably. So we store this
+                        -- new one, but we need to align the projector as well
+                        map.stickX, map.stickY, map.stickmag = map.x, map.y, map.mag
+                        tcpsend( projector, "CHXY " .. math.floor(map.x+map.translateQuadX) .. " " .. math.floor(map.y+map.translateQuadY) )
+                        tcpsend( projector, "MAGN " .. 1/map.mag )
+                end
+end
+
+function Map:setUnsticky()
+		if not self.sticky then return end
+                self:move( self.stickX , self.stickY )
+                self.mag = self.stickmag
+                self.sticky = false
+                layout.notificationWindow:addMessage("Map " .. self.displayFilename .. " is no more sticky. Be careful with your movements")
 end
 
 return Map

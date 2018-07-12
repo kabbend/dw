@@ -1070,29 +1070,12 @@ if window then
 	-- 'lctrl + u' : unstick map
 
   	if key == "s" and love.keyboard.isDown("lctrl") then
-		if not atlas:isVisible(map) then return end -- if map is not visible, do nothing
-		if not map.sticky then
-			-- we enter sticky mode. Normally, the projector is fully aligned already, so
-			-- we just save the current status for future restoration
-			map.stickX, map.stickY, map.stickmag = map.x, map.y, map.mag
-			map.sticky = true
-			layout.notificationWindow:addMessage("Map " .. map.displayFilename .. " is now sticky")
-		else
-			-- we were already sticky, with a different status probably. So we store this
-			-- new one, but we need to align the projector as well
-			map.stickX, map.stickY, map.stickmag = map.x, map.y, map.mag
-			tcpsend( projector, "CHXY " .. math.floor(map.x+map.translateQuadX) .. " " .. math.floor(map.y+map.translateQuadY) ) 
-			tcpsend( projector, "MAGN " .. 1/map.mag ) 
-		end
+		map:sticky()
 		return
   	end
 
   	if key == "u" and love.keyboard.isDown("lctrl") then
-		if not map.sticky then return end
-		window:move( window.stickX , window.stickY )
-		window.mag = window.stickmag
-		window.sticky = false
-		layout.notificationWindow:addMessage("Map " .. window.displayFilename .. " is no more sticky. Be careful with your movements")
+		map:unsticky()
 		return
 	end
 

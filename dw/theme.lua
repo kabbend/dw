@@ -28,6 +28,10 @@ theme.iconStop		= love.graphics.newImage( "icons/stop.png" )
 theme.iconLink		= love.graphics.newImage( "icons/link.png" )
 theme.iconWipe		= love.graphics.newImage( "icons/wipe32x32.png" )
 theme.iconKill		= love.graphics.newImage( "icons/kill32x32.png" )
+theme.iconVisible	= love.graphics.newImage( "icons/eye32x32.png" )
+theme.iconInvisible	= love.graphics.newImage( "icons/eyeblocked32x32.png" )
+theme.iconSticky	= love.graphics.newImage( "icons/scotch32x32.png" )
+theme.iconUnSticky	= love.graphics.newImage( "icons/scotchblack32x32.png" )
 
 return theme
 
