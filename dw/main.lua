@@ -1400,10 +1400,6 @@ function init()
 
     io.write("loaded " .. #RpgClasses .. " classes.\n")
 
-    layout.snapshotWindow.snapText[1] = layout.snapshotWindow.snapText[1] .. " (" .. #layout.snapshotWindow.snapshots[1].s .. ")"
-    layout.snapshotWindow.snapText[2] = layout.snapshotWindow.snapText[2] .. " (" .. #layout.snapshotWindow.snapshots[2].s .. ")"
-    layout.snapshotWindow.snapText[3] = layout.snapshotWindow.snapText[3] .. " (" .. #RpgClasses .. ")"
-
 end
 
 --

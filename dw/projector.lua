@@ -54,7 +54,7 @@ function projectorWindow:draw()
     pmag = f
     pzx,pzy = pzx +  (self.layout.W1 - pw) / 2, pzy + ( self.layout.H1 - ph ) / 2
 
-    if self.o.class == "map" and self.o.map.mask and #self.o.map.mask > 0 then
+    if self.o and self.o.class == "map" and self.o.map.mask and #self.o.map.mask > 0 then
 
 		pmask = self.o.map.mask
                 love.graphics.setColor(0,0,0)
@@ -69,7 +69,7 @@ function projectorWindow:draw()
 
     love.graphics.draw( self.currentImage , pzx , pzy , 0 , f, f )
 
-    if self.o.class == "map" and self.o.map.mask and #self.o.map.mask > 0 then
+    if self.o and self.o.class == "map" and self.o.map.mask and #self.o.map.mask > 0 then
 
                 love.graphics.setStencilTest("gequal", 2)
                 love.graphics.setColor(255,255,255)

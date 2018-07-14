@@ -201,7 +201,11 @@ function Window:drawBar( )
 
  -- print title
  if self == self.layout:getFocus() then love.graphics.setColor(255,255,255) else love.graphics.setColor(0,0,0) end
- love.graphics.print( title , zx + 3 + marginForRect , zy - theme.iconSize + 3 )
+ if self.class == "snapshot" then
+ 	love.graphics.print( title .. " (" .. #self.snapshots[self.currentSnap].s .. ")", zx + 3 + marginForRect , zy - theme.iconSize + 3 )
+ else
+ 	love.graphics.print( title , zx + 3 + marginForRect , zy - theme.iconSize + 3 )
+ end
 
   -- draw small circle or rectangle in upper corner, to show which mode we are in
  love.graphics.setColor(255,0,0)
