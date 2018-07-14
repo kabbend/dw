@@ -38,7 +38,8 @@ function notificationWindow:draw()
   love.graphics.setColor(255, 51, 51)
   love.graphics.rectangle( "fill", zx, zy, self.w, self.h, 10, 10 ) 
   love.graphics.setColor(color('white'))
-  love.graphics.setFont(theme.fontRound)
+  --love.graphics.setFont(theme.fontRound)
+  love.graphics.setFont(theme.fontTitle)
   if self.text then love.graphics.printf( self.text, zx + 10, zy + 5, self.w - 20 ) end
   end
 
