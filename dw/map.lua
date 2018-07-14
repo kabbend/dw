@@ -153,6 +153,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
  
   -- now we have the snapshot, we remove the full image and keep only the fileData
   self.im = nil
+  collectgarbage()
  
   self.selected = false
   -- window part of the object

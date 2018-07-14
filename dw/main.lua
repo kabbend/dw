@@ -1154,7 +1154,17 @@ function parseDirectory( t )
 
       io.write("scanning file '" .. f .. "'\n")
 
-      if kind == "pawns" then
+      if kind == "maps" then
+
+	-- all (image) files are considered as maps 
+	if string.sub(f,-4) == '.jpg' or string.sub(f,-4) == '.png'  then
+		local s = Map:new()
+          	s:load{ filename= path .. sep .. f, layout=layout }
+          	layout:addWindow( s , false )
+          	table.insert( layout.snapshotWindow.snapshots[2].s, s )
+	end
+
+      elseif kind == "pawns" then
 
 	-- all (image) files are considered as pawn images
 	if string.sub(f,-4) == '.jpg' or string.sub(f,-4) == '.png'  then
@@ -1241,38 +1251,7 @@ function parseDirectory( t )
 
     end
 
-    -- all classes are loaded with a snapshot
-    -- add them to snapshotBar
-    for i=1,#RpgClasses do
-	if not RpgClasses[i].snapshot then 
-		io.write("-- No snapshot for class " .. RpgClasses[i].class .. ", setting default one.\n"); 
-		RpgClasses[i].snapshot = defaultPawnSnapshot
-		templateArray[RpgClasses[i].class].snapshot = defaultPawnSnapshot 
-	 end
-	table.insert( layout.snapshotWindow.snapshots[3].s, RpgClasses[i].snapshot ) 
-    end
 
-    -- before returning, sort the class snapshot bar: PJ first, then PNJ, all in alphabetical order
-    -- Comparison function
-    function compare(x, y)
-      if x[1].PJ and not y[1].PJ then return true end
-      if not x[1].PJ and y[1].PJ then return false end
-      return x[1].class < y[1].class 
-    end
-
-    -- Step 1: Merge in pairs
-    for i,v in ipairs(RpgClasses) do
-      RpgClasses[i] = {RpgClasses[i], layout.snapshotWindow.snapshots[3].s[i]}
-    end
-
-    -- Step 2: Sort
-    table.sort(RpgClasses, compare)
-
-    -- Step 3: Unmerge pairs
-    for i, v in ipairs(RpgClasses) do
-      RpgClasses[i] = v[1]
-      layout.snapshotWindow.snapshots[3].s[i] = v[2]
-    end
 
 end
 
@@ -1384,6 +1363,44 @@ function init()
     -- load rest of data files (ie. images and maps)
     parseDirectory{ path = baseDirectory .. sep .. fadingDirectory }
     parseDirectory{ path = baseDirectory .. sep .. "pawns" , kind = "pawns" }
+    parseDirectory{ path = baseDirectory .. sep .. "maps" , kind = "maps" }
+
+    -- all classes are loaded with a snapshot
+    -- add them to snapshotBar
+    for i=1,#RpgClasses do
+	if not RpgClasses[i].snapshot then 
+		io.write("-- No snapshot for class " .. RpgClasses[i].class .. ", setting default one.\n"); 
+		RpgClasses[i].snapshot = defaultPawnSnapshot
+		templateArray[RpgClasses[i].class].snapshot = defaultPawnSnapshot 
+	 end
+	table.insert( layout.snapshotWindow.snapshots[3].s, RpgClasses[i].snapshot ) 
+    end
+
+    -- before returning, sort the class snapshot bar: PJ first, then PNJ, all in alphabetical order
+    -- Comparison function
+    function compare(x, y)
+      if x[1].PJ and not y[1].PJ then return true end
+      if not x[1].PJ and y[1].PJ then return false end
+      return x[1].class < y[1].class 
+    end
+
+    -- Step 1: Merge in pairs
+    for i,v in ipairs(RpgClasses) do
+      RpgClasses[i] = {RpgClasses[i], layout.snapshotWindow.snapshots[3].s[i]}
+    end
+
+    -- Step 2: Sort
+    table.sort(RpgClasses, compare)
+
+    -- Step 3: Unmerge pairs
+    for i, v in ipairs(RpgClasses) do
+      RpgClasses[i] = v[1]
+      layout.snapshotWindow.snapshots[3].s[i] = v[2]
+    end
+
+    io.write("loaded " .. #RpgClasses .. " classes.\n")
+
+    layout.snapshotWindow.snapText[3] = layout.snapshotWindow.snapText[3] .. " (" .. #RpgClasses .. ")"
 
 end
 
