@@ -1060,7 +1060,10 @@ if window then
 	if key == "v" and love.keyboard.isDown("lctrl") then
 		atlas:toggleVisible( map )
 		if not atlas:isVisible( map ) then map.sticky = false else 
-		  layout.notificationWindow:addMessage("Map " .. map.displayFilename .. " is now visible to players. All your changes will be relayed to them")
+		  layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is now visible to players. All your changes will be relayed to them")
+		  if not map.mask or #map.mask <= 1 then
+		    layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is fully covered by Fog of War. Players will see nothing !")
+		  end
 		end
     	end
 

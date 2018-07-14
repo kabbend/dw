@@ -165,8 +165,12 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
  
   mapOpeningXY = mapOpeningXY + mapOpeningStep
  
-  -- specific to the map itself
-  if self.kind == "map" then self.mask = {} else self.mask = nil end
+  -- specific to the map itself. By default a map is completely masked by the fog of war
+  if self.kind == "map" then 
+	self.mask = { "RECT 0 0 0 0" } -- we always create a "dummy" mask, to it is sent to the projector and the map is hidden to players 
+  else
+	self.mask = nil
+  end
   self.step = 50
   self.pawns = {}
   self.basePawnSize = nil -- base size for pawns on this map (in pixels, for map at scale 1)

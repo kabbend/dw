@@ -35,9 +35,9 @@ end
 function notificationWindow:draw()
   local W,H=self.layout.W, self.layout.H
   local zx,zy = -( self.x/self.mag - W / 2), -( self.y/self.mag - H / 2)
-  love.graphics.setColor(color('white'))
+  love.graphics.setColor(255, 51, 51)
   love.graphics.rectangle( "fill", zx, zy, self.w, self.h, 10, 10 ) 
-  love.graphics.setColor(color('black'))
+  love.graphics.setColor(color('white'))
   love.graphics.setFont(theme.fontRound)
   if self.text then love.graphics.printf( self.text, zx + 10, zy + 5, self.w - 20 ) end
   end

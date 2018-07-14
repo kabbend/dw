@@ -273,7 +273,6 @@ function love.draw()
        		love.graphics.setStencilTest("equal", 1)
 
      	else
-
        		love.graphics.setColor(255,255,255)
 
      	end
