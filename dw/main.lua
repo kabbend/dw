@@ -436,7 +436,7 @@ function love.draw()
   	love.graphics.setColor(255,255,255)
 	local x,y = love.mouse.getPosition()
 	local s = dragObject.snapshot
-	love.graphics.draw(s.im, x, y, 0, s.snapmag, s.snapmag)
+	love.graphics.draw(s.thumb, x, y)
   end
 
   -- draw arrow eventually
@@ -500,7 +500,9 @@ function love.mousereleased( x, y )
 	local w = layout:getWindow(x,y)
 	if w and w.markForClosure then 
 		w.markForClosure = false
-		layout:setDisplay(w,false) 
+		layout:setDisplay(w,false)
+		-- if it's a map, we release image memory. Image will be eventually reloaded if needed
+		if w.class == "map" then io.write("releasing memory for map " .. w.title .. "\n"); w.im = nil end 
 	end
 
 	-- we were dragging an object, we drop it 

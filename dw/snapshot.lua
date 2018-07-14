@@ -69,18 +69,9 @@ function snapshotBar:draw()
 			-- do not draw scenario, ... 
 		else
   			love.graphics.setColor(255,255,255)
-			if self.currentSnap == 2 and snapshots[self.currentSnap].s[i].quad then
-			love.graphics.draw( 	snapshots[self.currentSnap].s[i].im , 
-				snapshots[self.currentSnap].s[i].quad,
-				x ,
-				zy + (line-1)*(snapshotSize + snapshotMargin) - ( snapshots[self.currentSnap].s[i].h * snapshots[self.currentSnap].s[i].snapmag - snapshotSize ) / 2 + 2, 
-			    	0 , snapshots[self.currentSnap].s[i].snapmag, snapshots[self.currentSnap].s[i].snapmag )
-			else
-			love.graphics.draw( 	snapshots[self.currentSnap].s[i].im , 
-				x ,
-				zy + (line-1)*(snapshotSize + snapshotMargin) - ( snapshots[self.currentSnap].s[i].h * snapshots[self.currentSnap].s[i].snapmag - snapshotSize ) / 2 + 2, 
-			    	0 , snapshots[self.currentSnap].s[i].snapmag, snapshots[self.currentSnap].s[i].snapmag )
-			end
+			--love.graphics.draw( 	snapshots[self.currentSnap].s[i].im , x , zy + (line-1)*(snapshotSize + snapshotMargin) - ( snapshots[self.currentSnap].s[i].h * snapshots[self.currentSnap].s[i].snapmag - snapshotSize ) / 2 + 2, 0 , snapshots[self.currentSnap].s[i].snapmag, snapshots[self.currentSnap].s[i].snapmag )
+			love.graphics.draw( 	snapshots[self.currentSnap].s[i].thumb , x , zy + (line-1)*(snapshotSize + snapshotMargin) - ( snapshots[self.currentSnap].s[i].h * snapshots[self.currentSnap].s[i].snapmag - snapshotSize ) / 2 + 2 )
+
 		end
   		love.graphics.setScissor() 
 	end

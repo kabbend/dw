@@ -42,7 +42,7 @@ local searchSize              = 0                     -- idem
 -- map placement at startup
 local mapOpeningSize          = 400                   -- approximate width size at opening
 local mapOpeningXY            = 250                   -- position to open next map, will increase with maps opened
-local mapOpeningStep          = 100                   -- increase x,y at each map opening
+local mapOpeningStep          = 8                     -- increase x,y at each map opening
 
 --
 -- Multiple inheritance mechanism
@@ -83,6 +83,10 @@ local function loadLocalImage( file )
   return image
 end
 
+local lfn = love.filesystem.newFileData
+local lin = love.image.newImageData
+local lgn = love.graphics.newImage
+
 -- Map class
 -- a Map inherits from Window and from Snapshot, and is referenced both 
 -- in the Atlas and in the snapshots list
@@ -94,6 +98,16 @@ end
 --   (but there may be several maps displayed on the server, to the MJ)
 
 local Map = createClass( Window , Snapshot )
+
+function Map:lazyLoad()
+  	local img = lgn(lin(self.fileData), { mipmaps=true } )
+  	--local success, img = pcall(function() return lgn(lin(self.fileData), { mipmaps=true } ) end)
+  	img:setMipmapFilter( "nearest" )
+  	--pcall(function() img:setMipmapFilter( "nearest" ) end)
+  	local mode, sharpness = img:getMipmapFilter( )
+  	io.write("map lazy load: mode, sharpness = " .. tostring(mode) .. " " .. tostring(sharpness) .. "\n")
+	self.im = img
+  end
 
 function Map:load( t ) -- create from filename or file object (one mandatory). kind is optional
   local t = t or {}
@@ -119,24 +133,28 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
 	self.displayFilename = splitFilename(self.file:getFilename())
   end
   self.title = self.displayFilename or ""
-  local lfn = love.filesystem.newFileData
-  local lin = love.image.newImageData
-  local lgn = love.graphics.newImage
   local success, img 
+  self.fileData = lfn(image, 'img', 'file') -- store data for further usage 
   if self.kind == "map" then
-  	success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')), { mipmaps=true } ) end)
-  	pcall(function() img:setMipmapFilter( "nearest" ) end)
-  	local mode, sharpness = img:getMipmapFilter( )
-  	io.write("map load: mode, sharpness = " .. tostring(mode) .. " " .. tostring(sharpness) .. "\n")
+	success, img = pcall(function() return lgn(lin(self.fileData) ) end)
+  	--success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')), { mipmaps=true } ) end)
+  	--pcall(function() img:setMipmapFilter( "nearest" ) end)
+  	--local mode, sharpness = img:getMipmapFilter( )
+  	--io.write("map load: mode, sharpness = " .. tostring(mode) .. " " .. tostring(sharpness) .. "\n")
   else
-	success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')) ) end)
+	-- scenario ? DEPRECATED
+	--success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')) ) end)
   end
   self.im = img
   self.w, self.h = self.im:getDimensions()
   local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
   self.snapmag = math.min( f1, f2 )
+  self.thumb = createThumbnail(self.im,self.snapmag)
+ 
+  -- now we have the snapshot, we remove the full image and keep only the fileData
+  self.im = nil
+ 
   self.selected = false
-  
   -- window part of the object
   self.zoomable = true
   self.whResizable = true
@@ -316,6 +334,8 @@ function Map:draw()
 
      local map = self
      currentWindowDraw = self
+
+     if not self.im then self:lazyLoad() end
 
      self:drawBack()
  
