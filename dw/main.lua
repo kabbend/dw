@@ -1016,46 +1016,12 @@ if window then
 	window:move( window.w / 2, window.h / 2 )
 	return
   end
-  if     window.class == "dialog" then
-	-- 'return' to submit a dialog message
-	-- 'backspace'
-	-- any other key is treated as a message input
-  	if (key == "return") then
-	  doDialog()
-  	end
-	
-  elseif window.class == "graph" then
-
-    	if key == keyZoomIn then
-		ignoreLastChar = true
-		window:zoom( 1 )
-    	end 
-
-    	if key == keyZoomOut then
-		ignoreLastChar = true
-		window:zoom( -1 )
-    	end 
-
-   	if key == "tab" then
-	  window:iterate()
-   	end
-
-   	if key == "return" then
-	  window:doSearch()
-   	end
-
-  	if key == "s" and love.keyboard.isDown("lctrl") then
-	  window:saveGraph()
-	end
-
-  elseif window.class == "snapshot" then
+  if window.class == "snapshot" then
   
   	-- 'space' to change snapshot list
 	if key == 'space' then
-	  window.currentSnap = window.currentSnap + 1
-	  if window.currentSnap == 5 then window.currentSnap = 1 end
-	  window:setTitle( window.snapText[window.currentSnap] ) 
-	  return
+		window:getNext()
+	  	return
   	end
 
   elseif window.class == "map" and window.kind == "map" then

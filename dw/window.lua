@@ -31,7 +31,8 @@ local Window = {class = "window", w = 0, h = 0, mag = 1.0, x = 0, y = 0 , title 
 		zoomable = false ,							-- can we change the zoom ?
 		buttons = { 'close' },							-- ordered list of buttons (when applicable)
 											-- among:
-											-- 'close', 'always', 'unquad', 'fulsize', 'kill', 'wipe', 'eye', 'scotch'
+											-- 'close', 'always', 'unquad', 'fulsize', 'kill', 'wipe', 'eye', 'scotch', 'next',
+											-- 'fog'
 		movable = true ,							-- can we move the window ?
 	   	sticky = false, stickX = 0, stickY = 0, stickmag = 0 , 			-- FIXME: should be in map ?
 		markForClosure = false,							-- event to close the window
@@ -131,12 +132,8 @@ function Window:drawBar( )
  -- reserve space for buttons 
  local reservedForButtons = theme.iconSize * #self.buttons
 
- -- reserve space on maps for mask symbol (circle or rect)
- local marginForRect = 0
- if self.class == "map" and self.kind == "map" then marginForRect = 20 end
-
  -- max space for title
- local availableForTitle = self.w / self.mag - reservedForButtons - marginForRect
+ local availableForTitle = self.w / self.mag - reservedForButtons 
  if availableForTitle < 0 then availableForTitle = 0 end 
  local numChar = math.floor(availableForTitle / theme.fontRound:getWidth("a"))
  local title = string.sub( self.title , 1, numChar ) 
@@ -155,7 +152,11 @@ function Window:drawBar( )
 
  for i=1,#self.buttons do
    local zxf = math.min(zx + self.w / self.mag, W)
-
+   
+   -- check that we have enough space to draw the icon. Otherwise don't draw...
+   local realx = zxf - position * theme.iconSize + margin
+   if realx >= zx then
+ 
    if self.buttons[i] == 'close' then
    	love.graphics.draw( theme.iconClose, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
@@ -175,11 +176,21 @@ function Window:drawBar( )
    if self.buttons[i] == 'wipe' then
    	love.graphics.draw( theme.iconWipe, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
+   if self.buttons[i] == 'next' then
+   	love.graphics.draw( theme.iconNext, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   end
    if self.buttons[i] == 'eye' then
 	if self.class == "map" and atlas:isVisible(self) then
    		love.graphics.draw( theme.iconVisible, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	else
    		love.graphics.draw( theme.iconInvisible, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	end
+   end
+   if self.buttons[i] == 'fog' then
+	if maskType == 'RECT' then
+   		love.graphics.draw( theme.iconSquare, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	else 
+   		love.graphics.draw( theme.iconCircle, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	end
    end
    if self.buttons[i] == 'scotch' and atlas:isVisible(self) then -- sticky icon only when map is visible
@@ -196,22 +207,16 @@ function Window:drawBar( )
    		love.graphics.draw( theme.iconFullSize, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	end
    end
+   end -- realx
    position=position-1
  end
 
  -- print title
  if self == self.layout:getFocus() then love.graphics.setColor(255,255,255) else love.graphics.setColor(0,0,0) end
  if self.class == "snapshot" then
- 	love.graphics.print( title .. " (" .. #self.snapshots[self.currentSnap].s .. ")", zx + 3 + marginForRect , zy - theme.iconSize + 3 )
+ 	love.graphics.print( title .. " (" .. #self.snapshots[self.currentSnap].s .. ")", zx + 3 , zy - theme.iconSize + 3 )
  else
- 	love.graphics.print( title , zx + 3 + marginForRect , zy - theme.iconSize + 3 )
- end
-
-  -- draw small circle or rectangle in upper corner, to show which mode we are in
- love.graphics.setColor(255,0,0)
- if self.class == "map" and self.kind == "map" then
-    if maskType == "RECT" then love.graphics.rectangle("line",zx + 5, zy - 16 ,12, 12) end
-       if maskType == "CIRC" then love.graphics.circle("line",zx + 10, zy - 10, 5) end
+ 	love.graphics.print( title , zx + 3 , zy - theme.iconSize + 3 )
  end
 
 end
@@ -284,6 +289,12 @@ function Window:click(x,y)
 		end
 		if (button == 'wipe') then 	
 			self:wipe()	
+		end
+		if (button == 'next') then 	
+			self:getNext()	
+		end
+		if (button == 'fog') then 	
+			if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end
 		end
 		if (button == 'eye') then 	
 			local map = self

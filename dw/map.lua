@@ -113,7 +113,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local t = t or {}
   if not t.kind then self.kind = "map" else self.kind = t.kind end 
   self.class = "map"
-  self.buttons = { 'unquad', 'scotch', 'eye', 'fullsize', 'kill', 'wipe', 'always', 'close' } 
+  self.buttons = { 'unquad', 'scotch', 'eye', 'fog', 'fullsize', 'kill', 'wipe', 'always', 'close' } 
   self.layout = t.layout
  
   -- snapshot part of the object

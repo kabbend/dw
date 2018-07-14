@@ -7,7 +7,7 @@ local snapshots    = {}
 snapshots[1] = { s = {}, index = 1, offset = 0 }        -- small snapshots at the bottom, for general images
 snapshots[2] = { s = {}, index = 1, offset = 0 }        -- small snapshots at the bottom, for scenario & maps
 snapshots[3] = { s = {}, index = 1, offset = 0 }        -- small snapshots at the bottom, for PNJ classes 
-snapshots[4] = { s = {}, index = 1, offset = 0 }        -- small snapshots at the bottom, for windows 
+snapshots[4] = { s = {}, index = 1, offset = 0 }        -- small snapshots at the bottom, for windows -- not used so far, reserved
 local snapText = { "PICTURES", "MAPS", "CHARACTERS", "WINDOWS" }
 
 local iconSize = theme.iconSize
@@ -18,7 +18,7 @@ local iconSize = theme.iconSize
 --
 
 local snapshotBar = Window:new{ class = "snapshot" , title = snapText[1] , wResizable = true , hResizable = true, 
-				download = true , alwaysOnTop = true, alwaysVisible = true , buttons = {} }
+				download = true , alwaysOnTop = true, alwaysVisible = true , buttons = { 'next' } }
 
 function snapshotBar:new( t ) -- create from w, h, x, y
   local new = t or {}
@@ -48,7 +48,7 @@ function snapshotBar:draw()
   local snapshotMargin = self.layout.snapshotMargin
   local zx,zy = -( self.x * 1/self.mag - self.layout.W / 2), -( self.y * 1/self.mag - self.layout.H / 2)
   --local basex = zx + snapshots[self.currentSnap].offset
-  for line = 1, self.lines do
+  for line = 1, self.lines do 
 
     for i=1 + self.maxPerLine * (line - 1), (self.maxPerLine * line) do
 	if i > #snapshots[self.currentSnap].s then break end
@@ -184,7 +184,7 @@ function snapshotBar:click(x,y)
       if self.currentSnap == 1 then dragObject.object = { class = "image" } end
       if self.currentSnap == 2 then dragObject.object = { class = "map" , map = snapshots[self.currentSnap].s[index] } end
       if self.currentSnap == 3 then dragObject.object = { class = "pnj", rpgClass = RpgClasses[index] } end
-      if self.currentSnap == 4 then dragObject.object = { class = "pawn" } end
+      --if self.currentSnap == 4 then dragObject.object = { class = "pawn" } end
 
       if snapshots[self.currentSnap].s[index].selected then
 	      -- already selected
@@ -219,7 +219,8 @@ function snapshotBar:click(x,y)
 	
 	      -- 3: Pawn. If focus is set, use this image as PJ/PNJ pawn image 
 	      else
-			if focus then PNJTable[ focus ].snapshot = snapshots[self.currentSnap].s[index] end
+			--if focus then PNJTable[ focus ].snapshot = snapshots[self.currentSnap].s[index] end
+			io.write("internal error. should not come here")
 
 	      end
 
@@ -235,6 +236,12 @@ function snapshotBar:click(x,y)
       end
   end
 
+  end
+
+function snapshotBar:getNext()
+  self.currentSnap = self.currentSnap + 1
+  if self.currentSnap == 4 then self.currentSnap = 1 end -- we ignore snapshots[4], not used for the moment
+  self:setTitle( self.snapText[self.currentSnap] )
   end
 
 return snapshotBar
