@@ -31,6 +31,10 @@ vec4 effect(vec4 colour, Image tex, vec2 tc, vec2 sc)
   return ((sum / (samples * samples)) + source) * colour;
 } ]]
 
+local lastPawn = nil
+local lastPawnTimer = 0
+local lastPawnTimerDelay = 1	-- sec to activate the timer
+
 -- for scenario search
 local textBase                = "Search: "
 local text                    = textBase              -- text printed on the screen when typing search keywords
@@ -452,10 +456,11 @@ function Map:draw()
     self:drawResize()
 
     -- print popup if needed
+    local p, popup
     if layout:getFocus() == self then
      love.graphics.setColor(255,255,255)
      local x,y = love.mouse.getPosition()
-     local p , _ , popup = self:isInsidePawn(x,y)
+     p , _ , popup = self:isInsidePawn(x,y)
      if p and popup then
 	-- we are hovering the popup zone of a pawn 
 	-- Show popup now if there is a popup associated with that Pawn
@@ -468,6 +473,25 @@ function Map:draw()
 	end
      end   
     end
+
+    if p and p == lastPawn then
+      if love.timer.getTime( ) - lastPawnTimer > lastPawnTimerDelay then
+      	lastPawnTimer = love.timer.getTime( )
+	-- reorder pawns, selected pawn comes last
+	local newP = {}
+	for i=1,#self.pawns do
+	  if lastPawn ~= self.pawns[i] then table.insert(newP,self.pawns[i]) end
+	end
+	table.insert(newP,lastPawn)
+	self.pawns = newP
+      end
+    elseif not p then
+    	lastPawn= nil 
+    	lastPawnTimer = 0 
+    else
+    	lastPawn= p
+    	lastPawnTimer = love.timer.getTime( )
+    end 
  
 end
 
@@ -515,8 +539,8 @@ function Map:update(dt)
 		end	
 	end
 
-	Window.update(self,dt)
 
+	Window.update(self,dt)
 	end
 
 -- remove a pawn from the list (different from killing the pawn)
@@ -697,6 +721,8 @@ function Map:setUnsticky()
                 self.sticky = false
                 layout.notificationWindow:addMessage("Map " .. self.displayFilename .. " is no more sticky. Be careful with your movements")
 end
+
+ 
 
 return Map
 
