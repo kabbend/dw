@@ -465,7 +465,6 @@ function Map:draw()
 		love.graphics.draw( PNJTable[ i ].snapshotPopup.im , x, y )
 	end
      end   
-    end
 
     if p and p == lastPawn then
       if love.timer.getTime( ) - lastPawnTimer > lastPawnTimerDelay then
@@ -485,6 +484,8 @@ function Map:draw()
     	lastPawn= p
     	lastPawnTimer = love.timer.getTime( )
     end 
+
+    end -- layout:getFocus
  
 end
 

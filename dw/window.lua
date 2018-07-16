@@ -228,6 +228,8 @@ function Window:drawBar( )
  local availableForTitle = 0
  if zx < 0 then
    availableForTitle = (self.w + zx) / self.mag - reservedForButtons 
+ elseif zx + reservedForButtons > W then
+   availableForTitle = 0
  else
    availableForTitle = self.w /self.mag - reservedForButtons 
  end
