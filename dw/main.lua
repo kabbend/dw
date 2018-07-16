@@ -654,12 +654,13 @@ function love.mousereleased( x, y )
   	  	--local map = atlas:getMap()
 		local map = layout:getFocus()
 		local w = distanceFrom(arrowX,arrowY,arrowStartX,arrowStartY)
-		if map.basePawnSize then
-			map:createPawns( arrowX, arrowY, w )
-			table.sort( map.pawns, function(a,b) return a.layer < b.layer end )
-		else
+		--if map.basePawnSize then
+			--map:createPawns( arrowX, arrowY, w )
+			--table.sort( map.pawns, function(a,b) return a.layer < b.layer end )
+		--else
+			-- this always redefines the pawn size
 			map:setPawnSize(w)
-		end
+		--end
 		arrowPawn = false
 		return
 	end
