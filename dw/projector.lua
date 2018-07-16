@@ -77,6 +77,12 @@ function projectorWindow:draw()
                 love.graphics.setColor(255,255,255)
                 love.graphics.draw( self.currentImage, pzx, pzy, 0, f, f )
                 love.graphics.setStencilTest()
+
+		-- if map is full of fog, write it
+		if #self.o.map.mask == 1 then
+		  love.graphics.setFont(theme.fontTitle)
+		  love.graphics.print( " FOG\n   of\nWAR" , pzx + pw / 2 - 30, pzy + ph / 2 - 30)	
+		end
     end
 
   end
