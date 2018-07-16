@@ -23,6 +23,24 @@ function io.write( data ) if debug then oldiowrite( data ) end end
 -- Notes: Windows are gathered and manipulated thru the mainLayout class 
 --
 
+-- timer for button help popup
+local lastButton = nil
+local lastButtonTimer = 0
+local lastButtonTimerDelay = 1
+
+local popupButtonText = {
+	close='Ferme la fenêtre courante. Lorsque vous la réouvrirez, la fenêtre réapparaitra au même endroit et avec la même taille',
+	eye="Active ou désactive la visibilité de la Carte. Lorsqu'elle est visible, une carte est projetée aux Joueurs en temps réel avec tous les mouvements ou les zooms que vous faites (si vous voulez éviter cela, utilisez l'icone 'glue' qui apparait à gauche de cette icone, pour figer la vue des Joueurs)",
+	wipe="Retire tous les pions morts de la carte, s'il y en a",
+	kill="Retire tous les pions de toutes les cartes (A utiliser avec précaution)",
+	always="Force la fenêtre à l'avant plan",
+	fullsize="Affiche la carte à son échelle réelle (souvent supérieure à la taille de l'écran). Si vous réappuyez sur ce bouton, la fenêtre se repositionnera comme elle était initialement. Attention, si la fenêtre n'est pas en mode 'glue', le changement de zoom sera projeté aux Joueurs également.\n Si la carte est trop grande et que vous souhaitez vous concentrer sur une partie seulement, vous pouvez passer en mode 'quad' (quadrilatère) en sélectionnant une zone avec ALT + mouvement de souris",
+	scotch="Active ou désactive le mode 'glue'. En mode glue, les mouvements ou zoom que vous faîtes ne sont plus répercutés aux Joueurs (les mouvements des pions, eux, sont toujours visibles).\n Lorsque vous désactivez le mode glue, la carte revient à sa dernière position et zoom connus (c'est à dire, identique à celle que les Joueurs peuvent voir)",
+	next="Passe à la vue suivante. Cette fenêtre permet de lister, successivement: Les images générales (paysages, etc.), les cartes, les classes de personnage",
+	fog="Determine la forme géométrique (rectangle ou cercle) pour éliminer le brouillard de guerre. On peut tracer une forme en appuyant sur SHIFT + mouvement de souris",
+	 unquad="Sort du mode 'quad'. Restaure la fenêtre comme elle était auparavant. Cette modification n'est pas visible des Joueurs, puisque ni la position ni le zoom ne changent",
+	}
+
 -- sink motion
 local sinkSteps = 25 
 local border = 2
@@ -218,6 +236,30 @@ function Window:drawBar( )
  else
  	love.graphics.print( title , zx + 3 , zy - theme.iconSize + 3 )
  end
+ 
+ if self == self.layout:getFocus() then
+  local x,y = love.mouse.getPosition()
+  local button = self:isOverButton( x , y )
+  if button and button == lastButton then
+      if love.timer.getTime( ) - lastButtonTimer > lastButtonTimerDelay then
+        love.graphics.setColor(color('white'))
+	local zx = x
+	if zx + 200 > W then zx = zx - 200 end	
+	local h = 200
+	if button == "fullsize" then h = 300 end
+  	love.graphics.rectangle( "fill", zx, y, 200, h, 10, 10 )
+  	love.graphics.setColor(color('black'))
+  	love.graphics.setFont(theme.fontRound)
+	local text = popupButtonText[button] or 'none'
+  	love.graphics.printf( text , zx + 10, y + 10, 190 )
+      end
+  elseif not button then
+        lastButton= nil
+  else
+        lastButton= button 
+        lastButtonTimer = love.timer.getTime( )
+  end
+ end
 
 end
 
@@ -225,7 +267,6 @@ function Window:drawResize()
    local W,H=self.layout.W, self.layout.H
    local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
    love.graphics.setColor(255,255,255)
-   --love.graphics.rectangle( "fill", zx + self.w / self.mag - theme.iconSize - 2, zy + self.h/self.mag - theme.iconSize - 2, theme.iconSize + 2, theme.iconSize + 2 )
    love.graphics.draw( theme.iconResize, zx + self.w / self.mag - theme.iconSize - 1, zy + self.h/self.mag - theme.iconSize - 1 )
 end
 
@@ -240,8 +281,7 @@ function Window:drawBack()
   love.graphics.rectangle( "fill", zx, zy, (self.w) / self.mag, (self.h) / self.mag )  
 end
 
--- click in the window. Check some rudimentary behaviour (quit...)
-function Window:click(x,y)
+function Window:isOverButton(x,y)
 	local W,H=self.layout.W, self.layout.H
  	local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
  	local mx,my = self:WtoS(self.w, self.h) 
@@ -255,7 +295,22 @@ function Window:click(x,y)
 	if x >= zxf - nButtons * theme.iconSize and x <= zxf and y >= zyf - theme.iconSize and y <= zyf then
 		-- click on a button . Which one ?
 		local position = math.floor((x - (zxf - nButtons * theme.iconSize)) / theme.iconSize) + 1
-		local button = self:getButtonByPosition(position)
+		return self:getButtonByPosition(position)
+	else
+		return nil
+	end
+	end
+
+-- click in the window. Check some rudimentary behaviour (quit...)
+function Window:click(x,y)
+
+		local W,H=self.layout.W, self.layout.H
+ 		local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
+ 		local mx,my = self:WtoS(self.w, self.h) 
+
+		local button = self:isOverButton(x,y)
+
+		if button then
 
 		if (button == 'close') then 	
 			-- click on Close
@@ -314,8 +369,8 @@ function Window:click(x,y)
 			end
 		end
 
- 	end
-	
+		end -- button
+
 	if x >= mx - theme.iconSize and y >= my - theme.iconSize then
 		-- click on Resize at bottom right corner 
 		if self.wResizable or self.hResizable or self.whResizable then mouseResize = true end

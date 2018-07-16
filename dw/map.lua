@@ -321,17 +321,9 @@ function Map:fullsize()
 	-- store values for restoration
 	self.restoreX, self.restoreY, self.restoreMag = self.x, self.y, self.mag
 	self.fullSize = true 
+	self.x, self.y = self.w / 2, self.h / 2
+	self.mag = 1.0
 
-	if not self.mask or (self.mask and #self.mask == 0) then
-		-- no mask, just center the window with scale 1:0
-		self.x, self.y = self.w / 2, self.h / 2
-		self.mag = 1.0
-	else
-		-- there are masks. We take the center of the combined masks
-		self.x, self.y = (self.maskMinX + self.maskMaxX) / 2 - self.translateQuadX, (self.maskMinY + self.maskMaxY) / 2 - self.translateQuadY
-		self.mag = 1.0
-		io.write("fullsize with masks: going to " .. self.x .. " " .. self.y .. "\n")
-	end
 	if atlas:isVisible(self) and not self.sticky then 
 		tcpsend( projector, "MAGN " .. 1/self.mag ) 
 		tcpsend( projector, "CHXY " .. math.floor(self.x+self.translateQuadX) .. " " .. math.floor(self.y+self.translateQuadY) ) 
@@ -452,8 +444,8 @@ function Map:draw()
     love.graphics.setScissor() 
 
     -- print window button bar
-    self:drawBar()
     self:drawResize()
+    self:drawBar()
 
     -- print popup if needed
     local p, popup
