@@ -150,12 +150,6 @@ function Window:drawBar( )
  -- reserve space for buttons 
  local reservedForButtons = theme.iconSize * #self.buttons
 
- -- max space for title
- local availableForTitle = self.w / self.mag - reservedForButtons 
- if availableForTitle < 0 then availableForTitle = 0 end 
- local numChar = math.floor(availableForTitle / theme.fontRound:getWidth("a"))
- local title = string.sub( self.title , 1, numChar ) 
-
  -- draw bar
  if self == self.layout:getFocus() then love.graphics.setColor(color('selected')) else love.graphics.setColor(color('grey')) end
  local lzx,lzy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
@@ -229,12 +223,24 @@ function Window:drawBar( )
    position=position-1
  end
 
+ -- max space for title
+ local rzx = math.max(0,zx)
+ local availableForTitle = 0
+ if zx < 0 then
+   availableForTitle = (self.w + zx) / self.mag - reservedForButtons 
+ else
+   availableForTitle = self.w /self.mag - reservedForButtons 
+ end
+ if availableForTitle < 0 then availableForTitle = 0 end 
+ local numChar = math.floor(availableForTitle / 8)
+ local title = string.sub( self.title , 1, numChar ) 
+
  -- print title
  if self == self.layout:getFocus() then love.graphics.setColor(255,255,255) else love.graphics.setColor(0,0,0) end
- if self.class == "snapshot" then
- 	love.graphics.print( title .. " (" .. #self.snapshots[self.currentSnap].s .. ")", zx + 3 , zy - theme.iconSize + 3 )
+if self.class == "snapshot" then
+ 	love.graphics.print( title .. " (" .. #self.snapshots[self.currentSnap].s .. ")", rzx + 3 , zy - theme.iconSize + 3 )
  else
- 	love.graphics.print( title , zx + 3 , zy - theme.iconSize + 3 )
+ 	love.graphics.print( title , rzx + 3 , zy - theme.iconSize + 3 )
  end
  
  if self == self.layout:getFocus() then
