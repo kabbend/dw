@@ -60,6 +60,7 @@ function mainLayout:setDisplay( window, display )
 	if self.windows[window] then 
 		self.windows[window].d = display
 		if not display and self.focus == window then self:setFocus(nil) end -- looses the focus as well
+		if display and window.class == "map" then window.highlight = true end -- if opened once, a map is highlighted in snapshot bar
 	end
 	end 
 	

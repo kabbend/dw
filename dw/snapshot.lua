@@ -64,6 +64,13 @@ function snapshotBar:draw()
 				zy + 5 + (line-1)*(snapshotSize + snapshotMargin), 
 				snapshotSize, 
 				snapshotSize)
+		elseif snapshots[self.currentSnap].s[i].highlight then
+  			love.graphics.setColor(unpack(theme.color.darkblue))
+			love.graphics.rectangle("line", 
+				zx + snapshots[self.currentSnap].offset + (snapshotSize + snapshotMargin) * (relativeIndex-1),
+				zy + 5 + (line-1)*(snapshotSize + snapshotMargin), 
+				snapshotSize, 
+				snapshotSize)
 		end
 		if self.currentSnap == 2 and snapshots[self.currentSnap].s[i].kind == "scenario" then
 			-- do not draw scenario, ... 

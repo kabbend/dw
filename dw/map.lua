@@ -175,6 +175,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   else
 	self.mask = nil
   end
+  self.highlight = false
   self.step = 50
   self.pawns = {}
   self.basePawnSize = nil -- base size for pawns on this map (in pixels, for map at scale 1)
