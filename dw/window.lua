@@ -1,5 +1,7 @@
 
 local theme = require 'theme'
+local rpg = require 'rpg'
+
 local unpack = table.unpack or unpack
 function color(c) return unpack(theme.color[c]) end
 local oldiowrite = io.write
@@ -38,7 +40,8 @@ local popupButtonText = {
 	scotch="Active ou désactive le mode 'glue'. En mode glue, les mouvements ou zoom que vous faîtes ne sont plus répercutés aux Joueurs (les mouvements des pions, eux, sont toujours visibles).\n Lorsque vous désactivez le mode glue, la carte revient à sa dernière position et zoom connus (c'est à dire, identique à celle que les Joueurs peuvent voir)",
 	next="Passe à la vue suivante. Cette fenêtre permet de lister, successivement: Les images générales (paysages, etc.), les cartes, les classes de personnage",
 	fog="Determine la forme géométrique (rectangle ou cercle) pour éliminer le brouillard de guerre. On peut tracer une forme en appuyant sur SHIFT + mouvement de souris",
-	 unquad="Sort du mode 'quad'. Restaure la fenêtre comme elle était auparavant. Cette modification n'est pas visible des Joueurs, puisque ni la position ni le zoom ne changent",
+	unquad="Sort du mode 'quad'. Restaure la fenêtre comme elle était auparavant. Cette modification n'est pas visible des Joueurs, puisque ni la position ni le zoom ne changent",
+	round="Termine le round en cours. Restaure les actions des Joueurs",
 	}
 
 -- sink motion
@@ -50,7 +53,7 @@ local Window = {class = "window", w = 0, h = 0, mag = 1.0, x = 0, y = 0 , title 
 		buttons = { 'close' },							-- ordered list of buttons (when applicable)
 											-- among:
 											-- 'close', 'always', 'unquad', 'fulsize', 'kill', 'wipe', 'eye', 'scotch', 'next',
-											-- 'fog'
+											-- 'fog', 'round'
 		movable = true ,							-- can we move the window ?
 	   	sticky = false, stickX = 0, stickY = 0, stickmag = 0 , 			-- FIXME: should be in map ?
 		markForClosure = false,							-- event to close the window
@@ -190,6 +193,9 @@ function Window:drawBar( )
    end
    if self.buttons[i] == 'next' then
    	love.graphics.draw( theme.iconNext, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   end
+   if self.buttons[i] == 'round' then
+   	love.graphics.draw( theme.iconRound, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
    if self.buttons[i] == 'eye' then
 	if self.class == "map" and atlas:isVisible(self) then
@@ -355,6 +361,9 @@ function Window:click(x,y)
 		end
 		if (button == 'next') then 	
 			self:getNext()	
+		end
+		if (button == 'round') then 	
+			rpg.nextRound()	
 		end
 		if (button == 'fog') then 	
 			if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end

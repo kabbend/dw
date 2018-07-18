@@ -35,6 +35,7 @@ theme.iconUnSticky	= love.graphics.newImage( "icons/scotchblack32x32.png" )
 theme.iconNext		= love.graphics.newImage( "icons/redo32x32.png" )
 theme.iconCircle	= love.graphics.newImage( "icons/dashed-circle32x32.png" )
 theme.iconSquare	= love.graphics.newImage( "icons/dashed-square32x32.png" )
+theme.iconRound		= love.graphics.newImage( "icons/next32x32.png" )
 
 return theme
 

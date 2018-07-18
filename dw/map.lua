@@ -117,7 +117,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local t = t or {}
   if not t.kind then self.kind = "map" else self.kind = t.kind end 
   self.class = "map"
-  self.buttons = { 'unquad', 'scotch', 'eye', 'fog', 'fullsize', 'kill', 'wipe', 'always', 'close' } 
+  self.buttons = { 'unquad', 'scotch', 'eye', 'fog', 'fullsize', 'kill', 'wipe', 'round', 'always', 'close' } 
   self.layout = t.layout
  
   -- snapshot part of the object
@@ -386,6 +386,7 @@ function Map:draw()
 		     -- we do some checks before displaying the pawn: it might happen that the character corresponding to the pawn 
 		     -- is dead, or, worse, has been removed completely from the list
 		     if index then 
+		        local rw = map.pawns[i].snapshot.w * map.pawns[i].f / map.mag
 		     	local dead = false
 		     	dead = PNJTable[ index ].is_dead
 		     	if map.pawns[i].snapshot.im then
@@ -405,6 +406,7 @@ function Map:draw()
 				-- display hits number and ID
 		       		love.graphics.setColor(0,0,0)  
 				local f = map.basePawnSize / 5
+				local g = rw / 5
 				local s = f / 22 
 		       		love.graphics.setColor(0,0,0) 
 		       		love.graphics.rectangle( "fill", zx, zy, f / map.mag, 3 * f / map.mag)
@@ -416,6 +418,16 @@ function Map:draw()
 				love.graphics.print( PNJTable[index].id , zx, zy + 2 * f/map.mag , 0, s/map.mag, s/map.mag )
 		       		love.graphics.setColor(0,0,0) 
 				love.graphics.print( "D" .. PNJTable[index].armor , zx, zy + f/map.mag, 0, s/map.mag, s/map.mag )
+				-- display actions if PJ
+				if PNJTable[index].PJ then
+		       		  if PNJTable[index].actions == PJMaxAction then love.graphics.setColor(theme.color.red) else love.graphics.setColor(theme.color.green) end
+		       		  love.graphics.rectangle( "fill", zx + (g*4), zy , g , (PNJTable[index].actions+1) * g )
+		       		  love.graphics.setColor(0,0,0) 
+				  love.graphics.print( "A", zx + (g*4) , zy , 0, s/map.mag, s/map.mag )
+				  for j=1,PNJTable[index].actions do
+					love.graphics.print( j , zx + (g*4) , zy + j * g, 0, s/map.mag, s/map.mag )
+				  end
+				end 
 	     	     	end
 		     end
 	     end
@@ -453,7 +465,7 @@ function Map:draw()
     if layout:getFocus() == self then
      love.graphics.setColor(255,255,255)
      local x,y = love.mouse.getPosition()
-     p , _ , popup = self:isInsidePawn(x,y)
+     p , _ , popup, _ = self:isInsidePawn(x,y)
      if p and popup then
 	-- we are hovering the popup zone of a pawn 
 	-- Show popup now if there is a popup associated with that Pawn
@@ -662,12 +674,21 @@ function Map:createPawns( sx, sy, requiredSize , id )
 -- return a pawn if position x,y on the screen (typically, the mouse), is
 -- inside any pawn of the map. If several pawns at same location, return the
 -- one with highest layer value
+--
+-- return pawn , hit , popup , action
+-- where
+--   pawn is the pawn below the coordinates x, y (or nil)
+--   hit is true if the mouse is over the "hit" zone 
+--   popup is true if the mouse is over the "popup" zone 
+--   action is true if the mouse is over the "action" zone
+-- 
 function Map:isInsidePawn(x,y)
   local W,H=self.layout.W,self.layout.H
   local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2) -- position of the map on the screen
   if self.pawns then
 	local hitClicked = false -- a priori
 	local popup = false -- a priori
+	local action = false -- a priori
 	local indexWithMaxLayer, maxlayer = 0, 0
 	for i=1,#self.pawns do
 		-- check that this pawn is still active/alive
@@ -682,10 +703,11 @@ function Map:isInsidePawn(x,y)
 			indexWithMaxLayer = i
 			if x <= tx + sizex / 5 and y <= ty + sizey / 5 then hitClicked = true else hitClicked = false end
 			if x <= tx + sizex / 5 and y >= ty + sizey / 5 and y <= ty + 2 * sizey / 5 then popup = true else popup = false end
+			if x >= tx + (sizex / 5) * 4 and y <= ty + sizey / 5 then action = true else action = false end
 		  end
 	  	end
   	end
-	if indexWithMaxLayer == 0 then return nil, false, false else return self.pawns[ indexWithMaxLayer ], hitClicked, popup end
+	if indexWithMaxLayer == 0 then return nil, false, false, false else return self.pawns[ indexWithMaxLayer ], hitClicked, popup, action end
   end
 end
 
