@@ -42,6 +42,8 @@ local popupButtonText = {
 	fog="Determine la forme géométrique (rectangle ou cercle) pour éliminer le brouillard de guerre. On peut tracer une forme en appuyant sur SHIFT + mouvement de souris",
 	unquad="Sort du mode 'quad'. Restaure la fenêtre comme elle était auparavant. Cette modification n'est pas visible des Joueurs, puisque ni la position ni le zoom ne changent",
 	round="Termine le round en cours. Restaure les actions des Joueurs",
+	hook="-reserved-",
+	partial="Donne un resultat aléatoire possible sur un demi-succès (7-9) en combat, pour relancer l'action",
 	}
 
 -- sink motion
@@ -196,6 +198,12 @@ function Window:drawBar( )
    end
    if self.buttons[i] == 'round' then
    	love.graphics.draw( theme.iconRound, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   end
+   if self.buttons[i] == 'hook' then
+   	love.graphics.draw( theme.iconHook, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   end
+   if self.buttons[i] == 'partial' then
+   	love.graphics.draw( theme.iconPartial, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
    if self.buttons[i] == 'eye' then
 	if self.class == "map" and atlas:isVisible(self) then
@@ -364,6 +372,12 @@ function Window:click(x,y)
 		end
 		if (button == 'round') then 	
 			rpg.nextRound()	
+		end
+		if (button == 'hook') then 	
+                    	layout.notificationWindow:addMessage( rpg.getHook() )
+		end
+		if (button == 'partial') then 	
+                    	layout.notificationWindow:addMessage( rpg.getPartial() )
 		end
 		if (button == 'fog') then 	
 			if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end

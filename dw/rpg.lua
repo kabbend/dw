@@ -1,5 +1,6 @@
 
 local theme = require 'theme'
+local partial = require 'partial'
 
 --
 -- code related to the RPG itself (here, Fading Suns)
@@ -198,6 +199,14 @@ function rpg.increaseAction( i )
     if (not PNJTable[i]) or (not PNJTable[i].PJ) then return end
     PNJTable[i].actions = PNJTable[i].actions + 1
     if PNJTable[i].actions > PJMaxAction then PNJTable[i].actions = 0 end
+    end
+
+function rpg.getPartial()
+    return partial[ math.random(#partial) ]
+    end
+
+function rpg.getHook()
+    return '-- to be implemented -- ' 
     end
 
 return rpg

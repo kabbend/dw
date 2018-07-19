@@ -1419,5 +1419,7 @@ function love.load( args )
       initialized = false
     end
 
+    math.randomseed( os.time() )
+
     end
 

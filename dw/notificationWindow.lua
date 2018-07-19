@@ -21,7 +21,7 @@ function notificationWindow:new( t ) -- create from w, h, x, y
   new.opening = false
   new.closing = false
   new.pause   = false
-  new.maxX = t.x + t.w - 10 
+  new.maxX = t.x + t.w - 15
   new.minX = t.x 
   return new
 end
@@ -51,7 +51,7 @@ function notificationWindow:update(dt)
 	self.layout:setDisplay(self,true)
   end
   if self.opening and self.x <= self.maxX then 
-	self.x = self.x + 6
+	self.x = self.x + 10
 	if self.x > self.maxX then self.opening = false; self.pause = true; self.closing = false; self.pauseTimer = 3  end
   end
   if self.pause then
@@ -59,7 +59,7 @@ function notificationWindow:update(dt)
 	if self.pauseTimer < 0 then self.pause = false; self.closing = true end
   end
   if self.closing and self.x >= self.minX then 
-	self.x = self.x - 6 
+	self.x = self.x - 10 
 	if self.x < self.minX then self.closing = false; self.text = nil ; self.layout:setDisplay(self,false) end
   end
   end

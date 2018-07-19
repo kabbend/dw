@@ -18,7 +18,7 @@ local iconSize = theme.iconSize
 --
 
 local snapshotBar = Window:new{ class = "snapshot" , title = snapText[1] , wResizable = true , hResizable = true, 
-				download = true , alwaysOnTop = true, alwaysVisible = true , buttons = { 'next' } }
+				download = true , alwaysOnTop = true, alwaysVisible = true , buttons = { 'hook', 'next' } }
 
 function snapshotBar:new( t ) -- create from w, h, x, y
   local new = t or {}
