@@ -38,6 +38,8 @@ theme.iconSquare	= love.graphics.newImage( "icons/dashed-square32x32.png" )
 theme.iconRound		= love.graphics.newImage( "icons/next32x32.png" )
 theme.iconPartial	= love.graphics.newImage( "icons/partial32x32.png" )
 theme.iconHook		= love.graphics.newImage( "icons/hook32x32.png" )
+theme.iconDanger	= love.graphics.newImage( "icons/danger32x32.png" )
+theme.iconName		= love.graphics.newImage( "icons/name32x32.png" )
 
 return theme
 

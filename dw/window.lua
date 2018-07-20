@@ -44,6 +44,8 @@ local popupButtonText = {
 	round="Termine le round en cours. Restaure les actions des Joueurs",
 	hook="-reserved-",
 	partial="Donne un resultat aléatoire possible sur un demi-succès (7-9) en combat, pour relancer l'action",
+	danger="Donne aléatoirement un effet environnemental ou un piège",
+	name="Donne aléatoirement une série de noms de PNJ",
 	}
 
 -- sink motion
@@ -204,6 +206,12 @@ function Window:drawBar( )
    end
    if self.buttons[i] == 'partial' then
    	love.graphics.draw( theme.iconPartial, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   end
+   if self.buttons[i] == 'danger' then
+   	love.graphics.draw( theme.iconDanger, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   end
+   if self.buttons[i] == 'name' then
+   	love.graphics.draw( theme.iconName, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    end
    if self.buttons[i] == 'eye' then
 	if self.class == "map" and atlas:isVisible(self) then
@@ -378,6 +386,12 @@ function Window:click(x,y)
 		end
 		if (button == 'partial') then 	
                     	layout.notificationWindow:addMessage( rpg.getPartial() )
+		end
+		if (button == 'danger') then 	
+                    	layout.notificationWindow:addMessage( rpg.getDanger() )
+		end
+		if (button == 'name') then 	
+                    	layout.notificationWindow:addMessage( rpg.getName() )
 		end
 		if (button == 'fog') then 	
 			if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end

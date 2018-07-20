@@ -1,6 +1,8 @@
 
 local theme = require 'theme'
 local partial = require 'partial'
+local danger = require 'danger'
+local names = require 'names'
 
 --
 -- code related to the RPG itself (here, Fading Suns)
@@ -207,6 +209,18 @@ function rpg.getPartial()
 
 function rpg.getHook()
     return '-- to be implemented -- ' 
+    end
+
+function rpg.getDanger()
+    return danger[ math.random(#danger) ]
+    end
+
+function rpg.getName()
+    local t = "Humain: " .. names['Homme'][ math.random(#names['Homme']) ] .. " / " .. names['Femme'][ math.random(#names['Femme']) ] .. "\n"  	
+    t = t .. "Nain: " .. names['Nain'][ math.random(#names['Nain']) ] .. " / " .. names['Naine'][ math.random(#names['Naine']) ] .. "\n" 	
+    t = t .. "Orc: " .. names['Orc'][ math.random(#names['Orc']) ] .. " / " .. names['Clan'][ math.random(#names['Clan']) ] .. "\n" 	
+    t = t .. "Ville: " .. names['Ville'][ math.random(#names['Ville']) ] .. " / " .. names['Taverne'][ math.random(#names['Taverne']) ]  	
+    return t
     end
 
 return rpg
