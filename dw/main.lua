@@ -1247,6 +1247,7 @@ function init()
 				   h=theme.actionImage:getHeight(), x=-1220,y=700,layout=layout} 
 
     local notifWindow = notificationWindow:new{ w=500, h=120, x=-layout.W/2,y=layout.H/2-60,layout=layout } 
+    local magicWindow = notificationWindow:new{ w=1000, h=360, x=-layout.W/2,y=layout.H/2-180,layout=layout } 
 
     local dialogWindow = Dialog:new{w=800,h=220,x=400,y=110,layout=layout}
 
@@ -1266,6 +1267,7 @@ function init()
     layout:addWindow( snapshotWindow , 	true, "snapshotWindow" )
     layout:addWindow( actionsWindow , 	true, "actionsWindow" )
     layout:addWindow( notifWindow , 	false, "notificationWindow" )
+    layout:addWindow( magicWindow , 	false, "magicWindow" )
     layout:addWindow( dialogWindow , 	false, "dialogWindow" )
     layout:addWindow( helpWindow , 	false, "helpWindow" ) 
     layout:addWindow( dataWindow , 	false, "dataWindow" )

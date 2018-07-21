@@ -375,19 +375,19 @@ function Window:click(x,y)
 		elseif (button == 'round') then 	
 			rpg.nextRound()	
 		elseif (button == 'hook') then 	
-                    	layout.notificationWindow:addMessage( rpg.getHook() , 20 )
+                    	layout.notificationWindow:addMessage( rpg.getHook() , 5 )
 		elseif (button == 'partialT') then 	
-                    	layout.notificationWindow:addMessage( rpg.getPartialT() , 10 )
+                    	layout.notificationWindow:addMessage( rpg.getPartialT() , 8 )
 		elseif (button == 'partialS') then 	
-                    	layout.notificationWindow:addMessage( rpg.getPartialS() , 10 )
+                    	layout.notificationWindow:addMessage( rpg.getPartialS() , 8 )
 		elseif (button == 'magic') then 	
-                    	layout.notificationWindow:addMessage( rpg.getMagic() , 20 )
+                    	layout.magicWindow:addMessage( rpg.getMagic() , 300 , 'darkblue' ) -- 5 minutes
 		elseif (button == 'potion') then 	
                     	layout.notificationWindow:addMessage( rpg.getPotion() , 20 )
 		elseif (button == 'danger') then 	
                     	layout.notificationWindow:addMessage( rpg.getDanger() , 8 )
 		elseif (button == 'name') then 	
-                    	layout.notificationWindow:addMessage( rpg.getName() , 9 )
+                    	layout.notificationWindow:addMessage( rpg.getName() , 8 )
 		elseif (button == 'fog') then 	
 			if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end
 		elseif (button == 'eye') then 	

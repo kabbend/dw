@@ -223,7 +223,7 @@ function rpg.getHook()
     end
 
 function rpg.getMagic()
-    return '-- to be implemented -- ' 
+    return magic[ math.random(#magic) ]
     end
 
 function rpg.getPotion()
