@@ -43,8 +43,11 @@ local popupButtonText = {
 	unquad="Sort du mode 'quad'. Restaure la fenêtre comme elle était auparavant. Cette modification n'est pas visible des Joueurs, puisque ni la position ni le zoom ne changent",
 	round="Termine le round en cours. Restaure les actions des Joueurs",
 	hook="-reserved-",
-	partial="Donne un resultat aléatoire possible sur un demi-succès (7-9) en combat, pour relancer l'action",
+	partialT="Donne un resultat aléatoire en Mêlée sur un demi-succès (7-9), pour relancer l'action",
+	partialS="Donne un resultat aléatoire à l'Arc sur un demi-succès (7-9), pour relancer l'action",
 	danger="Donne aléatoirement un effet environnemental ou un piège",
+	potion="Donne une potion aléatoirement",
+	magic="Donne un objet magique aléatoirement",
 	name="Donne aléatoirement une série de noms de PNJ",
 	}
 
@@ -57,8 +60,8 @@ local Window = {class = "window", w = 0, h = 0, mag = 1.0, x = 0, y = 0 , title 
 		buttons = { 'close' },							-- ordered list of buttons (when applicable)
 											-- among:
 											-- 'close', 'always', 'unquad', 'fulsize', 'kill', 'wipe', 'eye', 'scotch', 'next',
-											-- 'fog', 'round'
-		movable = true ,							-- can we move the window ?
+											-- 'fog', 'round', 'partialS', 'partialT', 'potion', 'magic', 'name', 'hook'...
+		movable = true ,							-- can we move the window 
 	   	sticky = false, stickX = 0, stickY = 0, stickmag = 0 , 			-- FIXME: should be in map ?
 		markForClosure = false,							-- event to close the window
 		markForSink = false,							-- event to sink (gradually disappear)
@@ -165,12 +168,13 @@ function Window:drawBar( )
  love.graphics.rectangle( "fill", zx - border , zy - theme.iconSize , ((self.w) / self.mag)+2*border , theme.iconSize + margin * 2)
 
  -- draw icons. Positions are expressed from right to left, 1 is the rightmost one
- local position = #self.buttons
  love.graphics.setFont(theme.fontRound)
  love.graphics.setColor(255,255,255)
 
+ local position = #self.buttons
+ local zxf = math.min(zx + self.w / self.mag, W)
+
  for i=1,#self.buttons do
-   local zxf = math.min(zx + self.w / self.mag, W)
    
    -- check that we have enough space to draw the icon. Otherwise don't draw...
    local realx = zxf - position * theme.iconSize + margin
@@ -178,72 +182,65 @@ function Window:drawBar( )
  
    if self.buttons[i] == 'close' then
    	love.graphics.draw( theme.iconClose, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'always' then
+   elseif self.buttons[i] == 'always' then
      if self.alwaysOnTop then 	-- always on top, in position 2
  	love.graphics.draw( theme.iconOnTopActive, zxf - position*theme.iconSize+ margin , zy - theme.iconSize+ margin)
      else
  	love.graphics.draw( theme.iconOnTopInactive, zxf - position*theme.iconSize+ margin , zy - theme.iconSize+ margin)
      end
-   end
-   if self.buttons[i] == 'unquad' and self.quad then
+   elseif self.buttons[i] == 'unquad' and self.quad then
    	love.graphics.draw( theme.iconExpand, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'kill' then
+   elseif self.buttons[i] == 'kill' then
    	love.graphics.draw( theme.iconKill, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'wipe' then
+   elseif self.buttons[i] == 'wipe' then
    	love.graphics.draw( theme.iconWipe, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'next' then
+   elseif self.buttons[i] == 'next' then
    	love.graphics.draw( theme.iconNext, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'round' then
+   elseif self.buttons[i] == 'round' then
    	love.graphics.draw( theme.iconRound, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'hook' then
+   elseif self.buttons[i] == 'hook' then
    	love.graphics.draw( theme.iconHook, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'partial' then
-   	love.graphics.draw( theme.iconPartial, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'danger' then
+   elseif self.buttons[i] == 'partialT' then
+   	love.graphics.draw( theme.iconPartialTailler, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   elseif self.buttons[i] == 'partialS' then
+   	love.graphics.draw( theme.iconPartialSalve, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   elseif self.buttons[i] == 'danger' then
    	love.graphics.draw( theme.iconDanger, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'name' then
+   elseif self.buttons[i] == 'name' then
    	love.graphics.draw( theme.iconName, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
-   end
-   if self.buttons[i] == 'eye' then
+   elseif self.buttons[i] == 'potion' then
+   	love.graphics.draw( theme.iconPotion, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   elseif self.buttons[i] == 'magic' then
+   	love.graphics.draw( theme.iconMagic, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   elseif self.buttons[i] == 'eye' then
 	if self.class == "map" and atlas:isVisible(self) then
    		love.graphics.draw( theme.iconVisible, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	else
    		love.graphics.draw( theme.iconInvisible, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	end
-   end
-   if self.buttons[i] == 'fog' then
+   elseif self.buttons[i] == 'fog' then
 	if maskType == 'RECT' then
    		love.graphics.draw( theme.iconSquare, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	else 
    		love.graphics.draw( theme.iconCircle, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	end
-   end
-   if self.buttons[i] == 'scotch' and atlas:isVisible(self) then -- sticky icon only when map is visible
+   elseif self.buttons[i] == 'scotch' and atlas:isVisible(self) then -- sticky icon only when map is visible
 	if self.class == "map" and self.sticky then
    		love.graphics.draw( theme.iconSticky, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	else
    		love.graphics.draw( theme.iconUnSticky, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	end
-   end
-   if self.buttons[i] == 'fullsize' then
+   elseif self.buttons[i] == 'fullsize' then
 	if self.fullSize then
    		love.graphics.draw( theme.iconReduce, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	else
    		love.graphics.draw( theme.iconFullSize, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
 	end
-   end
+   end -- if button
+
    end -- realx
    position=position-1
- end
+ end -- for
 
  -- max space for title
  local rzx = math.max(0,zx)
@@ -350,53 +347,43 @@ function Window:click(x,y)
 			-- activated ( a yui button ). So we wait for the mouse release to perform
 			-- the actual closure
 			return self
-		end
-
-		if (button == 'always') then 	
+		elseif (button == 'always') then 	
 			-- click on Always On Top 
 			self.alwaysOnTop = not self.alwaysOnTop 
 			self.layout:setOnTop(self, self.alwaysOnTop)
-		end
-
-		if (button == 'unquad') then 	
+		elseif (button == 'unquad') then 	
 			-- click on Always On Top 
 			-- click on Expand (for maps with quad)
 			-- remove the quad. restore to initial size
 			self:setQuad()
-		end
-
-		if (button == 'fullsize') then 	
+		elseif (button == 'fullsize') then 	
 			-- click on Maximize/Minimize at upper right corner 
 			self:fullsize()	
-		end
-		if (button == 'kill') then 	
+		elseif (button == 'kill') then 	
 			self:killAll()	
-		end
-		if (button == 'wipe') then 	
+		elseif (button == 'wipe') then 	
 			self:wipe()	
-		end
-		if (button == 'next') then 	
+		elseif (button == 'next') then 	
 			self:getNext()	
-		end
-		if (button == 'round') then 	
+		elseif (button == 'round') then 	
 			rpg.nextRound()	
-		end
-		if (button == 'hook') then 	
-                    	layout.notificationWindow:addMessage( rpg.getHook() )
-		end
-		if (button == 'partial') then 	
-                    	layout.notificationWindow:addMessage( rpg.getPartial() )
-		end
-		if (button == 'danger') then 	
-                    	layout.notificationWindow:addMessage( rpg.getDanger() )
-		end
-		if (button == 'name') then 	
-                    	layout.notificationWindow:addMessage( rpg.getName() )
-		end
-		if (button == 'fog') then 	
+		elseif (button == 'hook') then 	
+                    	layout.notificationWindow:addMessage( rpg.getHook() , 20 )
+		elseif (button == 'partialT') then 	
+                    	layout.notificationWindow:addMessage( rpg.getPartialT() , 10 )
+		elseif (button == 'partialS') then 	
+                    	layout.notificationWindow:addMessage( rpg.getPartialS() , 10 )
+		elseif (button == 'magic') then 	
+                    	layout.notificationWindow:addMessage( rpg.getMagic() , 20 )
+		elseif (button == 'potion') then 	
+                    	layout.notificationWindow:addMessage( rpg.getPotion() , 20 )
+		elseif (button == 'danger') then 	
+                    	layout.notificationWindow:addMessage( rpg.getDanger() , 8 )
+		elseif (button == 'name') then 	
+                    	layout.notificationWindow:addMessage( rpg.getName() , 9 )
+		elseif (button == 'fog') then 	
 			if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end
-		end
-		if (button == 'eye') then 	
+		elseif (button == 'eye') then 	
 			local map = self
 			atlas:toggleVisible( map )
                 	if not atlas:isVisible( map ) then map.sticky = false else
@@ -405,8 +392,7 @@ function Window:click(x,y)
                     			layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is fully covered by Fog of War. Players will see nothing !")
                   		end
                 	end
-		end
-		if (button == 'scotch') then 	
+		elseif (button == 'scotch') then 	
 			if self.sticky then 
 				self:setUnsticky()	
 			else

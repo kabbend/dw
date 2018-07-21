@@ -203,11 +203,23 @@ function rpg.increaseAction( i )
     if PNJTable[i].actions > PJMaxAction then PNJTable[i].actions = 0 end
     end
 
-function rpg.getPartial()
+function rpg.getPartialT()
+    return partial[ math.random(#partial) ]
+    end
+
+function rpg.getPartialS()
     return partial[ math.random(#partial) ]
     end
 
 function rpg.getHook()
+    return '-- to be implemented -- ' 
+    end
+
+function rpg.getMagic()
+    return '-- to be implemented -- ' 
+    end
+
+function rpg.getPotion()
     return '-- to be implemented -- ' 
     end
 

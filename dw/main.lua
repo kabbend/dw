@@ -14,6 +14,7 @@ local widget		= require 'widget'	-- widgets components
 -- specific window classes
 local Help			= require 'help'		-- Help window
 local notificationWindow 	= require 'notificationWindow'	-- notifications
+local actionsBar 		= require 'actions'	-- notifications
 local iconWindow		= require 'iconWindow'		-- grouped 'Action'/'Histoire' icons
 local Dialog			= require 'dialog'		-- dialog with players 
 local setupWindow		= require 'setup'		-- setup/configuration information 
@@ -1251,6 +1252,8 @@ function init()
 
     local helpWindow = Help:new{w=1000,h=580,x=500,y=240,layout=layout}
 
+    local actionsWindow = actionsBar:new{w=(32+2)*8,h=(32+2)*2,x=200,y=140,layout=layout}
+
     local dataWindow = setupWindow:new{ w=600, h=400, x=300,y=layout.H/2-100, init=true,layout=layout} 
 
     local snapshotWindow = snapshotBar:new{ w=layout.W-6*layout.intW, h=layout.snapshotSize+2, x=-layout.intW+layout.W/2, 
@@ -1261,6 +1264,7 @@ function init()
     -- basic windows (as opposed to maps, for instance) are also stored by name, so we can retrieve them easily elsewhere in the code
     layout:addWindow( pWindow , 	true, "pWindow" )
     layout:addWindow( snapshotWindow , 	true, "snapshotWindow" )
+    layout:addWindow( actionsWindow , 	true, "actionsWindow" )
     layout:addWindow( notifWindow , 	false, "notificationWindow" )
     layout:addWindow( dialogWindow , 	false, "dialogWindow" )
     layout:addWindow( helpWindow , 	false, "helpWindow" ) 
