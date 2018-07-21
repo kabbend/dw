@@ -57,6 +57,7 @@ theme.iconSoupir	= love.graphics.newImage( "icons/soupir32x32.png" )
 theme.iconFail		= love.graphics.newImage( "icons/fail32x32.png" )
 theme.iconPotion	= love.graphics.newImage( "icons/potion32x32.png" )
 theme.iconMagic		= love.graphics.newImage( "icons/magic32x32.png" )
+theme.iconSuccess	= love.graphics.newImage( "icons/success32x32.png" )
 
 theme.imageTailler	= love.graphics.newImage( "images/tailler.png")
 theme.imageSalve	= love.graphics.newImage( "images/salve.png")

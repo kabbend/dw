@@ -7,8 +7,8 @@ local rpg		= require 'rpg'
 local icons    = {
 	{ { 'tailler', theme.iconTailler , theme.imageTailler }, { 'salve', theme.iconSalve , theme.imageSalve}, { 'defendre', theme.iconDefendre , theme.imageDefendre}, {
 'defier', theme.iconDefier, theme.imageDefier }, { 'discerner', theme.iconDiscerner , theme.imageDiscerner }, { 'etaler', theme.iconEtaler, theme.imageEtaler  }, { 'aider',
-theme.iconAider, theme.imageAider }, { 'negocier', theme.iconNegocier, theme.imageNegocier }},
-	{{'camp',theme.iconCamp,theme.imageCamp},{'recuperer',theme.iconRecuperer,theme.imageRecuperer},{'session',theme.iconSession,theme.imageSession},{'niveau',theme.iconNiveau,theme.imageNiveau},{'fail',theme.iconFail,theme.imageFail},{'soupir',theme.iconSoupir,theme.imageSoupir}},
+theme.iconAider, theme.imageAider }},
+	{{ 'negocier', theme.iconNegocier, theme.imageNegocier }, {'camp',theme.iconCamp,theme.imageCamp},{'recuperer',theme.iconRecuperer,theme.imageRecuperer},{'session',theme.iconSession,theme.imageSession},{'niveau',theme.iconNiveau,theme.imageNiveau},{'fail',theme.iconFail,theme.imageFail},{'soupir',theme.iconSoupir,theme.imageSoupir}},
 	}
 
 local iconSize = theme.iconSize
@@ -18,7 +18,7 @@ local iconMargin = 2
 --
 
 local actionsBar = Window:new{ 	class = "actions" , title = 'ACTIONS' , wResizable = false , hResizable = false, 
-				alwaysOnTop = true, alwaysVisible = true , buttons = {'partialS','partialT','danger','potion', 'magic', 'name'} }
+				alwaysOnTop = true, alwaysVisible = true , buttons = {'danger','potion', 'magic', 'name'} }
 
 function actionsBar:new( t ) -- create from w, h, x, y
   local new = t or {}
@@ -26,7 +26,7 @@ function actionsBar:new( t ) -- create from w, h, x, y
   self.__index = self
   new.snapshots = icons 
   new.lines = 2
-  new.columns = 8
+  new.columns = 7
   return new
 end
 

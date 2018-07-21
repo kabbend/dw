@@ -158,6 +158,9 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   -- now we have the snapshot, we remove the full image and keep only the fileData
   self.im = nil
   collectgarbage()
+  self.showIcons = nil		-- pawn on which we must display the icons
+  self.showIconsX = 0 
+  self.showIconsY = 0 
  
   self.selected = false
   -- window part of the object
@@ -428,6 +431,18 @@ function Map:draw()
 					love.graphics.print( j , zx + (g*4) , zy + j * g, 0, s/map.mag, s/map.mag )
 				  end
 				end 
+				-- display icons if PJ
+				if PNJTable[index].PJ and self.showIcons and map.pawns[i] == self.showIcons then
+				  self.showIconsX, self.showIconsY = zx + g * 5 + 2 , zy
+				  love.graphics.setColor(50,50,250)
+				  love.graphics.rectangle( "fill", zx + g * 5 - 2 , zy - 4 , theme.iconSize  + 10 , theme.iconSize * 4 + 12 )
+		       		  love.graphics.setColor(255,255,255) 
+				  love.graphics.rectangle( "fill", zx + g * 5 + 2 , zy , theme.iconSize  + 2 , theme.iconSize * 4 + 6 )
+				  love.graphics.draw( theme.iconSuccess , zx + g * 5 + 2 , zy )
+				  love.graphics.draw( theme.iconPartialSalve , zx + g * 5 + 2 , zy + theme.iconSize  + 2 )
+				  love.graphics.draw( theme.iconPartialTailler , zx + g * 5 + 2 , zy +  2 * theme.iconSize  + 4)
+				  love.graphics.draw( theme.iconFail , zx + g * 5 + 2 , zy +  3 * theme.iconSize  + 6)
+				end
 	     	     	end
 		     end
 	     end
@@ -488,16 +503,27 @@ function Map:draw()
 	end
 	table.insert(newP,lastPawn)
 	self.pawns = newP
+	self.showIcons = p 
+	self.showIconsTimer = 0 
       end
     elseif not p then
     	lastPawn= nil 
     	lastPawnTimer = 0 
+	if self.showIconsTimer == 0 then self.showIconsTimer = love.timer.getTime( ) end -- we are outside a pawn, start timer to make icons disappear
     else
     	lastPawn= p
     	lastPawnTimer = love.timer.getTime( )
+	self.showIconsTimer = 0 
     end 
 
     end -- layout:getFocus
+
+    if self.showIcons and self.showIconsTimer > 0 and love.timer.getTime( ) - self.showIconsTimer > 3 then
+	self.showIcons = nil
+	self.showIconsX, self.showIconsY = 0, 0
+	self.showIconsTimer = 0 
+    end
+
  
 end
 
@@ -671,6 +697,18 @@ function Map:createPawns( sx, sy, requiredSize , id )
 
   end
 
+--
+-- return true and an icon index (from 1 to ...) if hovering pawn icons zone
+--
+function Map:isInsideIcons(x,y)
+  if not self.showIcons then return nil, nil end
+  if x >= self.showIconsX and x <= self.showIconsX + theme.iconSize and y >= self.showIconsY and y <= self.showIconsY + 4 * theme.iconSize then
+    local index = math.floor( (y - self.showIconsY ) / (theme.iconSize + 2))
+    return self.showIcons, index
+  end 
+  return nil, nil
+  end
+
 -- return a pawn if position x,y on the screen (typically, the mouse), is
 -- inside any pawn of the map. If several pawns at same location, return the
 -- one with highest layer value
@@ -683,6 +721,7 @@ function Map:createPawns( sx, sy, requiredSize , id )
 --   action is true if the mouse is over the "action" zone
 -- 
 function Map:isInsidePawn(x,y)
+  if self:isInsideIcons(x,y) then return nil, false, false, false end -- icons take precedence...
   local W,H=self.layout.W,self.layout.H
   local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2) -- position of the map on the screen
   if self.pawns then
@@ -738,6 +777,24 @@ function Map:setUnsticky()
                 layout.notificationWindow:addMessage("Map " .. self.displayFilename .. " is no more sticky. Be careful with your movements")
 end
 
+function Map:clickPawnAction( p , index )
+	if not p then return end
+	local i = findPNJ(p.id)
+	if not i then return end
+	if index == 0 then
+		-- just success...
+		rpg.increaseAction(i)
+	elseif index == 1 then
+		layout.notificationWindow:addMessage( rpg.getPartialS() , 10 )
+		rpg.increaseAction(i)
+	elseif index == 2 then
+		layout.notificationWindow:addMessage( rpg.getPartialT() , 10 )
+		rpg.increaseAction(i)
+	elseif index == 3 then
+		layout.notificationWindow:addMessage( rpg.getFail() , 10 )
+		rpg.increaseAction(i)
+	end
+end
  
 
 return Map

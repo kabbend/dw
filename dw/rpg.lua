@@ -1,8 +1,11 @@
 
 local theme = require 'theme'
 local partial = require 'partial'
+local partialS = require 'partialS'
+local fail = require 'fail'
 local danger = require 'danger'
 local names = require 'names'
+local magic = require 'magic'
 
 --
 -- code related to the RPG itself (here, Fading Suns)
@@ -208,7 +211,11 @@ function rpg.getPartialT()
     end
 
 function rpg.getPartialS()
-    return partial[ math.random(#partial) ]
+    return partialS[ math.random(#partialS) ]
+    end
+
+function rpg.getFail()
+    return fail[ math.random(#fail) ]
     end
 
 function rpg.getHook()

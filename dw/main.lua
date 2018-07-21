@@ -1252,7 +1252,7 @@ function init()
 
     local helpWindow = Help:new{w=1000,h=580,x=500,y=240,layout=layout}
 
-    local actionsWindow = actionsBar:new{w=(32+2)*8,h=(32+2)*2,x=200,y=140,layout=layout}
+    local actionsWindow = actionsBar:new{w=(32+2)*7,h=(32+2)*2,x=200,y=140,layout=layout}
 
     local dataWindow = setupWindow:new{ w=600, h=400, x=300,y=layout.H/2-100, init=true,layout=layout} 
 

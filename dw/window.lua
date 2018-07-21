@@ -335,8 +335,15 @@ function Window:click(x,y)
  		local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
  		local mx,my = self:WtoS(self.w, self.h) 
 
-		local button = self:isOverButton(x,y)
+		local p, index = nil, nil 
+		if self.class == "map" then
+		  p, index = self:isInsideIcons(x,y) 
+		  if p then
+			self:clickPawnAction(p,index)
+		  end
+		end
 
+		local button = self:isOverButton(x,y)
 		if button then
 
 		if (button == 'close') then 	
