@@ -1,6 +1,28 @@
 
 local magic = {
 
+"Caul of the seventh son A leathery piece of dried flesh stretched over a triangle of spiked metal, tattooed with strange symbols and smelling of spice.  Move: When the name of an enemy is whispered to the caul Roll+Int 10+ Choose 2 7-9 Choose 1\n Learn the enemy's weakness. Take +1 ongoing to hack and slash.\n Learn one of the enemies secrets.\n The caul doesn't whisper your location to your enemy.\n 6- The caul whispers to the enemy and tells of your intentions.",
+
+"The lamentful whetstone A small block of bluish stone carved with the faces of the slain. Move: When you use the whetstone to sharpen your blade on waking it gains +1 piercing for the day but whenever you strike a foe, the blade will loudly ring with the wailing cries and lamentations of those who have fallen to its sharpness.",
+
+"Avarice coin A small and very shiny coin. Move: When the coin is placed on the floor in front of an unsuspecting being who values such things, they will notice it and, if able to safely, will pick it up. However, someone who places it down will struggle to leave it behind for any period of time."  ,
+
+"Ash twig A branch from an ash tree, strong as steel and very cold. Move: When used to draw occult symbols in the embers of last nights fire it will grow warm when pointed in the direction the wielder should travel that day. Take +1 forward to the next trailblazing roll.",
+
+"Grimdoll A small crudely crafted rag doll with unsettling looks.\nMove: When you sleep with the Grimdoll under your pillow Roll+Wis 10+ You have a dream in which you see a Grim portent that may come to pass.\n 7-9 You have a troubling and confusing dream in which you see a Grim portent that may come to pass. Become Confused until the Grim portent comes to pass or is averted.\n 6- You have a terrifying dream in which the thing that the Grimdoll is an effigy of promises to visit you soon. And it will.",
+
+"Mirrorfate shield A round mirrored shield. Provides +1 armour as a normal shield.\n Move: When you show a creature its image in the shield roll.\n 10+ The creature sees its own death reflected. If that causes it fear, take +1 ongoing against the creature. The mirror becomes tarnished.\n 7-9 The creature sees a glimpse of a possible death reflected. If that causes it fear, take +1 forward against the creature. The mirror becomes tarnished.\n 6- The mirror becomes tarnished.\n A tarnished Mirrorfate shield does not reflect. To clean the mirror it must be rubbed clean with the blood of a vanquished enemy for many hours.",
+
+"Thrice blessed bindings A long length of deep blue leather. When wrapped around the handle of a weapon the wielder can never unwillingly release their grip.",
+
+"Silvered guardian chain A length of thick silver chain. When wrapped around leather armour it gives +1 armour but clinks loudly.",
+
+"Bawdy cyclopedia A book of rude and disgusting facts written by the scribe of a legendarily crude Khan that, when read in the right company, amuses and provides +1 to Carouse. Illustrations are supplied for those who cannot read.",
+
+"Needle of the savage tailor A tiny, jagged needle that, when pricked into a foe, causes horrific wounds, dealing full class damage. Any attempt to strike when in combat takes -1 to hack and slash. The needle breaks after 3 uses.",
+
+"Helm of the champion A brilliant golden helmet with ornate wings. When a fair maiden places the helm on the head of her champion and states her quest, that individual cannot become Weak, Sick or feel fear until the helm is removed or the quest is complete.",
+
 "Argo-Thaan, Sainte-Vengeresse, Proche, 2 poids, Il existe de nombreuses épées dans ce monde, mais il y a une seule Argo-Thaan. C’est une lame d’or, d’argent et de la lumière, vénérée comme une relique sainte par tous les ordres et toutes les religions qui croient au Bien. La toucher est une bénédiction et pour beaucoup, sa vue provoque des larmes de joie.  Dans les mains d’un paladin, c’est une arme fiable et puissante. Un paladin qui la porte augmente son dé de dégâts à d12 et a accès à toutes les actions de paladin. Qui plus est, Argo-Thaan peut nuire à toute créature du Mal, peu importe ses défenses. Aucune créature maléfique ne peut la toucher sans subir d’atroces souffrances. Dans les mains d’un non-paladin, c’est simplement une épée, plus lourde et plus encombrante que la moyenne avec le marqueur maladroit.  Argo-Thaan, bien que n’ayant pas d’intelligence propre, sera toujours attirée par une bonne cause, comme le fer par un aimant.",
 
 "Flèches d’Achéron 1 munition, 1 poids Fabriquées dans l’obscurité par un artisan aveugle, ces flèches peuvent trouver leur cible même dans les ténèbres les plus profondes.  Un archer peut les tirer dans le noir, sûr de faire mouche les yeux bandés d’un épais tissu. Cependant, si jamais la lumière du soleil venait à toucher ces flèches, celles-ci se disperseraient comme ombre ou poussière.",

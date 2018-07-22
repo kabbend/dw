@@ -383,7 +383,7 @@ function Window:click(x,y)
 		elseif (button == 'magic') then 	
                     	layout.magicWindow:addMessage( rpg.getMagic() , 300 , 'darkblue' ) -- 5 minutes
 		elseif (button == 'potion') then 	
-                    	layout.notificationWindow:addMessage( rpg.getPotion() , 20 )
+                    	layout.magicWindow:addMessage( rpg.getPotion() , 120, 'darkblue' ) -- 2 minutes
 		elseif (button == 'danger') then 	
                     	layout.notificationWindow:addMessage( rpg.getDanger() , 8 )
 		elseif (button == 'name') then 	

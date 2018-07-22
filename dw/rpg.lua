@@ -6,6 +6,7 @@ local fail = require 'fail'
 local danger = require 'danger'
 local names = require 'names'
 local magic = require 'magic'
+local potions = require 'potions'
 
 --
 -- code related to the RPG itself (here, Fading Suns)
@@ -227,7 +228,7 @@ function rpg.getMagic()
     end
 
 function rpg.getPotion()
-    return '-- to be implemented -- ' 
+    return potions[ math.random(#potions) ]
     end
 
 function rpg.getDanger()
