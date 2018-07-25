@@ -28,6 +28,8 @@ local Snapshot			= require 'snapshotClass'	-- store and display one image
 local Pawn			= require 'pawn'		-- store and display one pawn to display on map 
 local Atlas			= require 'atlas'		-- store some information on maps (eg. which one is visible) 
 
+fonts = {}
+
 layout = mainLayout:new()		-- one instance of the global layout
 atlas = nil 				-- one instance of the atlas. Will be set in init()
 
@@ -1427,5 +1429,9 @@ function love.load( args )
 
     math.randomseed( os.time() )
 
+    -- load fonts for map text edition
+    for i=4,40 do 			-- load same font with different sizes
+      fonts[i] = love.graphics.newFont( "yui/yaoui/fonts/georgia.ttf" , i ) 
+    end
     end
 

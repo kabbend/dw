@@ -6,6 +6,12 @@ local Pawn		= require 'pawn'		-- store and display one pawn to display on map
 local rpg		= require 'rpg'		
 local utf8		= require 'utf8'		
 local codepage		= require 'codepage'		-- windows cp1252 support
+local widget		= require 'widget'
+
+local MAX_TEXT_W_AT_SCALE_1	= 500
+local BIGGER_SHARP		= 2
+local BIGGER_2_SHARP		= 1.6
+local BIGGER_3_SHARP		= 1.3
 
 local glowCode = [[
 extern vec2 size;
@@ -117,7 +123,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local t = t or {}
   if not t.kind then self.kind = "map" else self.kind = t.kind end 
   self.class = "map"
-  self.buttons = { 'unquad', 'scotch', 'eye', 'fog', 'fullsize', 'kill', 'wipe', 'round', 'always', 'close' } 
+  self.buttons = { 'unquad', 'scotch', 'eye', 'edit', 'fog', 'fullsize', 'kill', 'wipe', 'round', 'always', 'close' } 
   self.layout = t.layout
  
   -- snapshot part of the object
@@ -154,6 +160,13 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
   self.snapmag = math.min( f1, f2 )
   self.thumb = createThumbnail(self.im,self.snapmag)
+
+  -- map edition 
+  self.isEditing = false 
+  self.wText = widget.textWidget:new{ x = 0, y = 0 , w = 500, text = "" }
+  Window.addWidget(self,self.wText)
+  self.nodes = {}  -- id , x , y , text , w , h 
+  self.edges = {}  -- idFrom, idTo  
  
   -- now we have the snapshot, we remove the full image and keep only the fileData
   self.im = nil
@@ -381,6 +394,24 @@ function Map:draw()
        love.graphics.setStencilTest()
      end
 
+     -- print texts
+     for j=1,#self.nodes do
+	local nx, ny = self.nodes[j].x , self.nodes[j].y 
+	local width, height = self.nodes[j].w, self.nodes[j].h
+	nx, ny = nx / MAG , ny / MAG
+	width, height = width / MAG, height / MAG
+	if not (nx < 0 or nx > self.w or ny < 0 or ny > self.h) then 
+	  local fontSize = math.floor(12 / MAG)
+	  if fontSize < 4 then fontSize = 4 elseif fontSize > 40 then fontSize = 40 end
+	  --local width, wrappedtext = fonts[fontSize]:getWrap( self.nodes[j].text, MAX_TEXT_W_AT_SCALE_1 / MAG )
+	  --local height = table.getn(wrappedtext)*(fontSize+3)
+    	  love.graphics.setColor(255,255,255)
+    	  love.graphics.rectangle("fill",x+nx, y+ny+5,width ,height )	
+    	  love.graphics.setColor(0,0,0)
+	  love.graphics.setFont( fonts[fontSize] )
+	  love.graphics.printf( self.nodes[j].text, x+nx, y+ny+5, width , "left" )
+	end
+     end
 
      -- draw pawns, if any
      if map.pawns then
@@ -524,6 +555,10 @@ function Map:draw()
 	self.showIconsTimer = 0 
     end
 
+   -- text edition
+   if self.isEditing and self.wText.selected then
+	self.wText:draw()
+   end
  
 end
 
@@ -775,6 +810,61 @@ function Map:setUnsticky()
                 self.mag = self.stickmag
                 self.sticky = false
                 layout.notificationWindow:addMessage("Map " .. self.displayFilename .. " is no more sticky. Be careful with your movements")
+end
+
+function Map:click(x,y)
+  	local W,H=self.layout.W,self.layout.H
+  	local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2) -- position of the map on the screen
+
+	if not self.isEditing then
+		-- if we are not in editing mode or if we click on the button bar, we delegate completely to the Window
+		Window.click(self,x,y)
+
+	else
+		-- we are in edition mode
+ 
+		if self.wText.selected then
+
+			-- we were typing within a node and now we click somewhere else. This saves the Node
+			self.wText:unselect()		
+			io.write("having done a Node with text = '" .. self.wText:getText() .. "'\n")
+			local MAG = self.mag
+			local fontSize = math.floor(12) -- 12 is base font size at scale 1
+          		if fontSize < 4 then fontSize = 4 elseif fontSize > 40 then fontSize = 40 end
+          		local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), MAX_TEXT_W_AT_SCALE_1 )
+          		local height = table.getn(wrappedtext)*(fontSize+3)
+			table.insert( self.nodes , {
+				x = self.wText.x , y = self.wText.y ,
+				text = self.wText:getText() ,
+				w = width, h = height
+				})
+
+			-- we delegate the click to the window
+			Window.click(self,x,y)
+
+		elseif love.keyboard.isDown("lctrl") then
+	 	
+			-- we edit a new node
+			self.wText.x , self.wText.y = (x - zx ) * self.mag , (y - zy) * self.mag
+			self.wText.head = '' 
+			self.wText:select()
+
+		else
+			-- we click somewhere...
+			-- we delegate the click to the window
+			Window.click(self,x,y)
+		end
+
+	
+	end
+end
+
+function Map:toogleEditionMode()
+	self.isEditing = not self.isEditing
+end
+
+function Map:getEditionMode()
+	return self.isEditing
 end
 
 function Map:clickPawnAction( p , index )

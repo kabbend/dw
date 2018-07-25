@@ -197,22 +197,24 @@ function widget.textWidget:draw()
   local x,y = self.x, self.y
   local zx , zy = 0 , 0
   if self.parent then zx, zy = self.parent:WtoS(0,0) end
+  local mag = 1.0
+  if self.parent then mag = self.parent.mag end
   if self.selected then
     love.graphics.setColor(255,255,255)
-    love.graphics.rectangle("fill",x+zx,y+zy,self.w,self.h)
+    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy,self.w,self.h)
     love.graphics.setColor(0,0,0)
     if self.cursorDraw then 
-	love.graphics.line(self.cursorPosition + x + zx + self.xOffset, y+zy, self.cursorPosition + x + zx + self.xOffset, y+zy+self.h) 
+	love.graphics.line(self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy, self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy+self.h) 
     end
   end
   love.graphics.setColor(0,0,0)
   love.graphics.setFont( theme.fontRound )
-  love.graphics.setScissor(x+zx,y+zy,self.w,self.h)
-  love.graphics.print(self.head..self.trail,x+zx+self.xOffset,y+zy)
+  love.graphics.setScissor(x/mag+zx,y/mag+zy,self.w,self.h)
+  love.graphics.print(self.head..self.trail,x/mag+zx+self.xOffset,y/mag+zy)
   if self.textSelected ~= "" then
     love.graphics.setColor(155,155,155,155)
     local w = self.cursorPosition - self.textSelectedPosition
-    love.graphics.rectangle("fill",x+zx+self.textSelectedPosition+self.xOffset,y+zy,w,self.h)
+    love.graphics.rectangle("fill",x/mag+zx+self.textSelectedPosition+self.xOffset,y/mag+zy,w,self.h)
   end
   love.graphics.setScissor()
   end

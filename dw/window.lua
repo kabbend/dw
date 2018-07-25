@@ -49,6 +49,7 @@ local popupButtonText = {
 	potion="Donne une potion aléatoirement",
 	magic="Donne un objet magique aléatoirement",
 	name="Donne aléatoirement une série de noms de PNJ",
+	edit="Mode édition de Map",
 	}
 
 -- sink motion
@@ -210,6 +211,12 @@ function Window:drawBar( )
    	love.graphics.draw( theme.iconName, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    elseif self.buttons[i] == 'potion' then
    	love.graphics.draw( theme.iconPotion, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+   elseif self.buttons[i] == 'edit' then
+	if self:getEditionMode() then
+   		love.graphics.draw( theme.iconEditOn, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	else
+   		love.graphics.draw( theme.iconEditOff, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
+	end
    elseif self.buttons[i] == 'magic' then
    	love.graphics.draw( theme.iconMagic, zxf - position * theme.iconSize + margin, zy - theme.iconSize + margin)
    elseif self.buttons[i] == 'eye' then
@@ -388,6 +395,8 @@ function Window:click(x,y)
                     	layout.notificationWindow:addMessage( rpg.getDanger() , 8 )
 		elseif (button == 'name') then 	
                     	layout.notificationWindow:addMessage( rpg.getName() , 8 )
+		elseif (button == 'edit') then 	
+			self:toogleEditionMode()
 		elseif (button == 'fog') then 	
 			if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end
 		elseif (button == 'eye') then 	
