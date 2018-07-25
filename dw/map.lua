@@ -395,6 +395,7 @@ function Map:draw()
      end
 
      -- print texts
+     if self.isEditing then
      for j=1,#self.nodes do
 	local nx, ny = self.nodes[j].x , self.nodes[j].y 
 	local width, height = self.nodes[j].w, self.nodes[j].h
@@ -410,6 +411,7 @@ function Map:draw()
 	  	love.graphics.printf( self.nodes[j].text, x+nx, y+ny+1, width , "left" )
 	  end
 	end
+     end
      end
 
      -- draw pawns, if any
