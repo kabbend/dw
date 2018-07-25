@@ -175,6 +175,7 @@ function widget.textWidget:select()
 
 function widget.textWidget:unselect() 
 	if self.selected then 
+		self.xOffset = 0
 		self.selected = false
 		textActiveCallback = nil 
 		textActiveBackspaceCallback = nil 

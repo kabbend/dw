@@ -400,16 +400,15 @@ function Map:draw()
 	local width, height = self.nodes[j].w, self.nodes[j].h
 	nx, ny = nx / MAG , ny / MAG
 	width, height = width / MAG, height / MAG
-	if not (nx < 0 or nx > self.w or ny < 0 or ny > self.h) then 
+	if x + nx + width > 0 and x + nx < self.w and y + ny > 0 and y + ny < self.h then 
 	  local fontSize = math.floor(12 / MAG)
-	  if fontSize < 4 then fontSize = 4 elseif fontSize > 40 then fontSize = 40 end
-	  --local width, wrappedtext = fonts[fontSize]:getWrap( self.nodes[j].text, MAX_TEXT_W_AT_SCALE_1 / MAG )
-	  --local height = table.getn(wrappedtext)*(fontSize+3)
-    	  love.graphics.setColor(255,255,255)
-    	  love.graphics.rectangle("fill",x+nx, y+ny+5,width ,height )	
-    	  love.graphics.setColor(0,0,0)
-	  love.graphics.setFont( fonts[fontSize] )
-	  love.graphics.printf( self.nodes[j].text, x+nx, y+ny+5, width , "left" )
+	  if fontSize >= 4 and fontSize <= 40 then  -- don't print if too small or too big...
+    	  	love.graphics.setColor(255,255,255)
+    	  	love.graphics.rectangle("fill",x+nx, y+ny+1,width ,height )	
+    	  	love.graphics.setColor(0,0,0)
+	  	love.graphics.setFont( fonts[fontSize] )
+	  	love.graphics.printf( self.nodes[j].text, x+nx, y+ny+1, width , "left" )
+	  end
 	end
      end
 
