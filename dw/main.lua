@@ -28,10 +28,14 @@ local Snapshot			= require 'snapshotClass'	-- store and display one image
 local Pawn			= require 'pawn'		-- store and display one pawn to display on map 
 local Atlas			= require 'atlas'		-- store some information on maps (eg. which one is visible) 
 
+-- all fonts used by edition mode in Maps
 fonts = {}
 
 layout = mainLayout:new()		-- one instance of the global layout
 atlas = nil 				-- one instance of the atlas. Will be set in init()
+
+-- text dictionary, loaded with Maps
+local textDict = { } 	-- key = lua filename, value = { array-of-node }
 
 function inTable(tbl, item)
     for key, value in pairs(tbl) do
@@ -1133,7 +1137,13 @@ function parseDirectory( t )
 
       io.write("scanning file '" .. f .. "'\n")
 
-      if kind == "maps" then
+      if string.sub(f,-4) == '.lua' then
+
+	-- it's a text nodes file associated to a Map. We store it for further use
+	io.write("Loading Nodes file for map '" .. f .. " (real path='" .. path .. sep .. f .."')\n")
+	textDict[ f ] = loadfile( path .. sep .. f )
+
+      elseif kind == "maps" then
 
 	-- all (image) files are considered as maps 
 	if string.sub(f,-4) == '.jpg' or string.sub(f,-4) == '.png'  then
@@ -1384,6 +1394,15 @@ function init()
 
     io.write("loaded " .. #RpgClasses .. " classes.\n")
 
+    -- Some Maps might have associated text, load them
+    for i=1,#layout.snapshotWindow.snapshots[2].s do
+	io.write("Looking text for '" .. layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua'\n")
+	if textDict[ layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua" ] then
+		io.write("Got it. Loading nodes.\n")
+		layout.snapshotWindow.snapshots[2].s[i].nodes = textDict[ layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua" ]()
+	end
+    end
+ 
 end
 
 --

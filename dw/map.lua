@@ -13,6 +13,14 @@ local BIGGER_SHARP		= 2
 local BIGGER_2_SHARP		= 1.6
 local BIGGER_3_SHARP		= 1.3
 
+local function uuid()
+    local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+    return string.gsub(template, '[xy]', function (c)
+        local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+        return string.format('%x', v)
+    end)
+end
+
 local glowCode = [[
 extern vec2 size;
 extern int samples = 5; // pixels per axis; higher = bigger glow, worse performance
@@ -835,10 +843,14 @@ function Map:click(x,y)
           		local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), MAX_TEXT_W_AT_SCALE_1 )
           		local height = table.getn(wrappedtext)*(fontSize+3)
 			table.insert( self.nodes , {
-				x = self.wText.x , y = self.wText.y ,
+				id = uuid(),
+				x = math.floor(self.wText.x) , y = math.floor(self.wText.y) ,
 				text = self.wText:getText() ,
-				w = width, h = height
+				w = math.floor(width), h = math.floor(height)
 				})
+
+			-- save file
+			self:saveText()
 
 			-- we delegate the click to the window
 			Window.click(self,x,y)
@@ -887,6 +899,29 @@ function Map:clickPawnAction( p , index )
 	end
 end
  
+function luastrsanitize(str)
+	str=str:gsub('\\','\\\\') 
+	str=str:gsub('"','&quot;')  
+	return str
+end
+
+
+function Map:writeNode( file, node )
+  local text = luastrsanitize(node.text)
+  file:write("{ id=\"" .. node.id .. "\", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
+  end
+
+function Map:saveText()
+  local savefile = "save.lua"
+  if self.filename then savefile = self.filename .. ".lua" end
+  local file = io.open(savefile,"w")
+  if not file then return end
+  file:write("return {\n")
+  for i=1,#self.nodes do
+	self:writeNode( file, self.nodes[i] )
+  end
+  file:write("}\n")
+  end
 
 return Map
 
