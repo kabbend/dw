@@ -128,7 +128,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   local t = t or {}
   if not t.kind then self.kind = "map" else self.kind = t.kind end 
   self.class = "map"
-  self.buttons = { 'unquad', 'scotch', 'eye', 'edit', 'fog', 'fullsize', 'kill', 'wipe', 'round', 'always', 'close' } 
+  self.buttons = { 'unquad', 'scotch', 'eye', 'fog', 'fullsize', 'kill', 'wipe', 'round', 'edit', 'always', 'close' } 
   self.layout = t.layout
  
   -- snapshot part of the object
@@ -170,7 +170,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   self.isEditing = false 
   self.wText = widget.textWidget:new{ x = 0, y = 0 , w = 500, text = "" }
   Window.addWidget(self,self.wText)
-  self.nodes = {}  -- id , x , y , text , w , h , color, backgroundColor
+  self.nodes = {}  -- id , x , y , text , w , h , color, backgroundColor, xOffset
   self.edges = {}  -- id1, id2  
  
   -- now we have the snapshot, we remove the full image and keep only the fileData
@@ -417,6 +417,7 @@ function Map:draw()
 
   	local fontSize = math.floor(12 / MAG)
   	if fontSize >= 4 and fontSize <= 40 then  -- don't print if too small or too big...
+	love.graphics.setLineWidth( 2 )
 
        		-- draw edges first     
      		for j=1,#self.nodes do
@@ -469,7 +470,7 @@ function Map:draw()
 				if node1.done and node2.done then
 					local sx1, sy1 = x+nx1+width1/2, y+ny1+height1/2
 					local sx2, sy2 = x+nx2+width2/2, y+ny2+height2/2
-    	  				love.graphics.setColor(0,0,0)
+    	  				love.graphics.setColor(theme.color.red)
 					love.graphics.line(sx1,sy1,sx2,sy2)
 				end
 				--[[
@@ -508,6 +509,8 @@ function Map:draw()
 	
 	end -- fontSize
 	
+	love.graphics.setLineWidth( 1 )
+
      end -- isEditing
 
      -- draw pawns, if any
@@ -930,7 +933,6 @@ function Map:click(x,y)
 		if self.wText.selected then
 
 			-- we were typing within a node and now we click somewhere else. This saves the Node
-			self.wText:unselect()		
 			local MAG = self.mag
 			local fontSize = math.floor(12) -- 12 is base font size at scale 1
           		if fontSize < 4 then fontSize = 4 elseif fontSize > 40 then fontSize = 40 end
@@ -944,7 +946,7 @@ function Map:click(x,y)
           			local height = table.getn(wrappedtext)*(fontSize+3)
 				justSaved = {
                                 	id = self.wText.id, x = math.floor(self.wText.x) , y = math.floor(self.wText.y) , text = self.wText:getText() , 
-					w = math.floor(width), h = math.floor(height)
+					w = math.floor(width), h = math.floor(height), xOffset = math.floor(self.wText.xOffset)
                                 	}
 				table.insert( self.nodes , justSaved )
 			elseif n then
@@ -955,6 +957,8 @@ function Map:click(x,y)
 				  end
 				end
 			end
+			-- don't edit text zone anymore
+			self.wText:unselect()		
 			-- save file
 			self:saveText()
 
@@ -963,7 +967,7 @@ function Map:click(x,y)
 		local node = self:isInsideText(x,y)
 		if node and love.keyboard.isDown("lctrl") then
 			-- we click on an existing node 	
-			io.write("want to move node " .. node.id .. "\n")
+			io.write("moving node " .. node.id .. "\n")
 			moveText = node
 			editingNode = true
 
@@ -972,6 +976,8 @@ function Map:click(x,y)
 			self.wText.id = node.id 
 			self.wText.x , self.wText.y = node.x , node.y 	-- move the input zone to the existing node
                         self.wText.head = node.text 			-- and with the same text
+                        self.wText.trail = '' 				-- and with the same text
+			self.wText.xOffset = node.xOffset or 0		-- and same text and cursor position
 			self.wText:setCursorPosition() 			-- we edit end of node 
                         self.wText:select()
 			-- don't display the existing node, we will replace it eventually
@@ -980,8 +986,9 @@ function Map:click(x,y)
 	
 		elseif love.keyboard.isDown("lctrl") then
 			-- we edit a new node
-			self.wText.x , self.wText.y = (x - zx ) * self.mag , (y - zy) * self.mag
+			self.wText.x , self.wText.y = (x - zx) * self.mag , (y - zy) * self.mag
 			self.wText.head = '' 
+                        self.wText.trail = '' 		
 			self.wText.id = uuid()
 			self.wText:select()
 			editingNode = true
@@ -1035,7 +1042,7 @@ function Map:writeNode( file, node )
   if node.hide then return end
   local text = luastrsanitize(node.text)
   if text ~= "" then
-    file:write("{ id=\"" .. node.id .. "\", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
+    file:write("{ id=\"" .. node.id .. "\", xOffset=" .. node.xOffset .. ", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
   end
   end
 
