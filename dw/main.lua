@@ -967,7 +967,12 @@ elseif mouseResize then
 		  --local ratio = w.w / w.h
 		  local projected = (x - mx)+(y - my)
 		  local neww= w.w + projected * w.mag
-		  local originalw, originalh = w.im:getDimensions()
+		  local originalw, originalh 
+		  if w.im then
+			originalw, originalh = w.im:getDimensions()
+		  else
+			originalw, originalh = 5000, 5000 
+		  end	
 		  if w.quad then _,_,originalw, originalh = w.quad:getViewport() end
 		  local oldmag = originalw / w.w
 		  local newmag = originalw / neww
@@ -1039,7 +1044,7 @@ if not initialized then return end
 -- 'lctrl + p' : display projector window 
 
 if key == "g" and love.keyboard.isDown("lctrl") then
-  layout:toggleWindow( layout.sWindow )
+  if layout.sWindow then layout:toggleWindow( layout.sWindow ) end
   return
 end
 if key == "d" and love.keyboard.isDown("lctrl") then
@@ -1143,11 +1148,13 @@ if window then
     	end 
     
 	if key == "v" and love.keyboard.isDown("lctrl") then
-		atlas:toggleVisible( map )
-		if not atlas:isVisible( map ) then map.sticky = false else 
-		  layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is now visible to players. All your changes will be relayed to them")
-		  if not map.mask or #map.mask <= 1 then
-		    layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is fully covered by Fog of War. Players will see nothing !")
+		if not map.scenariofile then -- it's not a scenario map
+		  atlas:toggleVisible( map )
+		  if not atlas:isVisible( map ) then map.sticky = false else 
+		    layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is now visible to players. All your changes will be relayed to them")
+		    if not map.mask or #map.mask <= 1 then
+		      layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is fully covered by Fog of War. Players will see nothing !")
+		    end
 		  end
 		end
     	end
@@ -1208,7 +1215,17 @@ function parseDirectory( t )
 
       io.write("scanning file '" .. f .. "'\n")
 
-      if string.sub(f,-4) == '.lua' then
+      if f == 'scenario.lua' then
+
+	-- create a scenario map
+	local s = Map:new()
+        s:load{ scenariofile= path .. sep .. f, layout=layout }
+        layout:addWindow( s , false , "sWindow" )
+	io.write("** loading a scenario file from " .. path .. sep .. f  .. "\n")
+	s.nodes, s.edges = loadfile( path .. sep .. f )()	
+	io.write("** Done. Loaded " .. #s.nodes .. " nodes and " .. #s.edges .. " edges\n")
+
+      elseif string.sub(f,-4) == '.lua' then
 
 	-- it's a text nodes file associated to a Map. We store it for further use
 	io.write("Loading Nodes file for map '" .. f .. " (real path='" .. path .. sep .. f .."')\n")

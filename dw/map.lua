@@ -115,6 +115,7 @@ local lgn = love.graphics.newImage
 local Map = createClass( Window , Snapshot )
 
 function Map:lazyLoad()
+	if not self.fileData then return end
   	local img = lgn(lin(self.fileData), { mipmaps=true } )
   	--local success, img = pcall(function() return lgn(lin(self.fileData), { mipmaps=true } ) end)
   	img:setMipmapFilter( "nearest" )
@@ -132,7 +133,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   self.layout = t.layout
  
   -- snapshot part of the object
-  assert( t.filename or t.file )
+  assert( t.filename or t.file or t.scenariofile )
   local image
   if t.filename then
 	self.filename = t.filename 
@@ -140,7 +141,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
 	self.is_local = false
 	self.baseFilename = string.gsub(self.filename,baseDirectory,"")
 	self.displayFilename = splitFilename(self.filename)
-  else 
+  elseif t.file then
 	self.file = t.file
 	image = loadLocalImage( self.file )
 	self.is_local = true
@@ -148,23 +149,6 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
 	self.displayFilename = splitFilename(self.file:getFilename())
   end
   self.title = self.displayFilename or ""
-  local success, img 
-  self.fileData = lfn(image, 'img', 'file') -- store data for further usage 
-  if self.kind == "map" then
-	success, img = pcall(function() return lgn(lin(self.fileData) ) end)
-  	--success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')), { mipmaps=true } ) end)
-  	--pcall(function() img:setMipmapFilter( "nearest" ) end)
-  	--local mode, sharpness = img:getMipmapFilter( )
-  	--io.write("map load: mode, sharpness = " .. tostring(mode) .. " " .. tostring(sharpness) .. "\n")
-  else
-	-- scenario ? DEPRECATED
-	--success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')) ) end)
-  end
-  self.im = img
-  self.w, self.h = self.im:getDimensions()
-  local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
-  self.snapmag = math.min( f1, f2 )
-  self.thumb = createThumbnail(self.im,self.snapmag)
 
   -- map edition 
   self.isEditing = false 
@@ -172,8 +156,38 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   Window.addWidget(self,self.wText)
   self.nodes = {}  -- id , x , y , text , w , h , color, backgroundColor, xOffset
   self.edges = {}  -- id1, id2  
- 
-  -- now we have the snapshot, we remove the full image and keep only the fileData
+
+  -- load image eventually
+  local success, img = nil, nil 
+  if not t.scenariofile then
+    self.fileData = lfn(image, 'img', 'file') -- store data for further usage 
+    if self.kind == "map" then
+	success, img = pcall(function() return lgn(lin(self.fileData) ) end)
+  	--success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')), { mipmaps=true } ) end)
+  	--pcall(function() img:setMipmapFilter( "nearest" ) end)
+  	--local mode, sharpness = img:getMipmapFilter( )
+  	--io.write("map load: mode, sharpness = " .. tostring(mode) .. " " .. tostring(sharpness) .. "\n")
+    else
+	-- scenario ? DEPRECATED
+	--success, img = pcall(function() return lgn(lin(lfn(image, 'img', 'file')) ) end)
+    end
+    self.im = img
+    self.w, self.h = self.im:getDimensions()
+    local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
+    self.snapmag = math.min( f1, f2 )
+    self.thumb = createThumbnail(self.im,self.snapmag)
+  else
+    self.im = nil
+    self.w, self.h = 5000, 5000
+    self.thumb = nil
+    self.snapmag = 1.0
+    self.buttons = { 'unquad', 'fullsize', 'always', 'close' } 
+    self.isEditing = true -- always in edit mode
+    self.scenariofile = t.scenariofile
+    self.title = "MAIN SCENARIO"
+  end
+
+  -- now we eventually have the snapshot, we remove the full image and keep only the fileData
   self.im = nil
   collectgarbage()
   self.showIcons = nil		-- pawn on which we must display the icons
@@ -232,7 +246,7 @@ function Map:setQuad(x1,y1,x2,y2)
 	if not x1 then 
 		-- setQuad() with no arguments removes the quad 
 		self.quad = nil 
-		self.w, self.h = self.im:getDimensions()
+		if self.im then self.w, self.h = self.im:getDimensions() else self.w, self.h = 5000, 5000 end
   		local f1, f2 = self.layout.snapshotSize / self.w, self.layout.snapshotSize / self.h
   		self.snapmag = math.min( f1, f2 )
 		--self.restoreX, self.restoreY, self.restoreMag = nil, nil, nil
@@ -400,18 +414,18 @@ function Map:draw()
      end
 
      love.graphics.setScissor(x,y,self.w/MAG,self.h/MAG) 
-     if map.quad then
+     if map.quad and map.im then
        love.graphics.draw( map.im, map.quad, x, y, 0, 1/MAG, 1/MAG )
-     else
+     elseif map.im then
        love.graphics.draw( map.im, x, y, 0, 1/MAG, 1/MAG )
      end
 
      if map.mask then
        love.graphics.setStencilTest("gequal", 2)
        love.graphics.setColor(255,255,255)
-     if map.quad then
+     if map.quad and map.im then
        love.graphics.draw( map.im, map.quad, x, y, 0, 1/MAG, 1/MAG )
-     else
+     elseif map.im then
        love.graphics.draw( map.im, x, y, 0, 1/MAG, 1/MAG )
      end
        love.graphics.setStencilTest()
@@ -1062,7 +1076,11 @@ function Map:writeNode( file, node )
 
 function Map:saveText()
   local savefile = "save.lua"
-  if self.filename then savefile = self.filename .. ".lua" end
+  if self.scenariofile then
+	savefile = self.scenariofile
+  elseif self.filename then 
+	savefile = self.filename .. ".lua" 
+  end
   local file = io.open(savefile,"w")
   if not file then return end
   file:write("return {\n")
