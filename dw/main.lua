@@ -84,6 +84,7 @@ fullBinary		= false			-- if true, the server will systematically send binary fil
 mouseMove		= false			-- a window is being moved
 pawnMove 		= nil			-- pawn currently moved by mouse movement
 moveText		= nil
+editingNode		= false
 
 -- drag & drop data
 dragMove		= false
@@ -397,6 +398,21 @@ function love.update(dt)
 		end
 	end
 
+	if moveText then
+		-- check that we are in the map...
+		local map = layout:getFocus()
+		if (not map) or (not map:isInside(arrowX,arrowY)) then return end
+	
+		-- check if we are just over another text 
+		local target = map:isInsideText(arrowX,arrowY)
+
+		if target and target ~= moveText then
+			-- we are targeting someone, draw the target in red color !
+			target.backgroundColor = theme.color.red
+			target.color = theme.color.white
+		end
+	end
+
 	end
 
 -- this function draws the fog of war on maps. As it is a function called automatically by love engine without arguments,
@@ -515,10 +531,29 @@ function love.mousereleased( x, y )
 
 	-- we were moving a Text (within a Map). We stop now
 	if w and w.isEditing and moveText then
-  		local zx,zy = -( w.x * 1/w.mag - layout.W / 2), -( w.y * 1/w.mag - layout.H / 2)
-		moveText.x , moveText.y = (x-zx)*w.mag, (y-zy)*w.mag 
+		local sourcemap = layout:getFocus()
+		local targetmap = layout:getWindow( x , y )
+		-- check that we are in same map...
+		if targetmap and targetmap == sourcemap then
+
+			local map = targetmap
+			local targetText = map:isInsideText(x,y)
+
+			if targetText and targetText ~= moveText then
+				-- we are managing connections between 2 nodes
+				map:manageEdge( moveText.id, targetText.id )
+			else
+				-- we are just moving a node within the map	
+  				local zx,zy = -( map.x * 1/map.mag - layout.W / 2), -( map.y * 1/map.mag - layout.H / 2)
+				moveText.x , moveText.y = (x-zx)*map.mag, (y-zy)*map.mag 
+			end
+			-- in both cases, we save the text/edges associated to that Map
+			map:saveText()
+		end
+		-- in any case...
+		arrowMode = false
 		moveText = nil
-		w:saveText()
+		editingNode = false
 		return
 	end
 
@@ -789,7 +824,16 @@ function love.mousepressed( x, y , button )
 
 		local map = window
 
-		if moveText then return end
+		if moveText then
+		  	pawnMove = nil 
+	   	  	arrowMode = true
+	   	  	arrowStartX, arrowStartY = x, y
+	   	  	mouseMove = false 
+		  	arrowModeMap = nil 
+			return
+		end
+
+		if editingNode then return end
 
 		local p, hitClicked , _ , action = map:isInsidePawn(x,y)
 
@@ -1410,8 +1454,9 @@ function init()
     for i=1,#layout.snapshotWindow.snapshots[2].s do
 	io.write("Looking text for '" .. layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua'\n")
 	if textDict[ layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua" ] then
-		io.write("Got it. Loading nodes.\n")
-		layout.snapshotWindow.snapshots[2].s[i].nodes = textDict[ layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua" ]()
+		layout.snapshotWindow.snapshots[2].s[i].nodes, layout.snapshotWindow.snapshots[2].s[i].edges = 
+			textDict[ layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua" ]()
+		io.write("Got it. Loading " .. #layout.snapshotWindow.snapshots[2].s[i].nodes .. " nodes and " .. #layout.snapshotWindow.snapshots[2].s[i].edges .. " edges.\n")
 	end
     end
  

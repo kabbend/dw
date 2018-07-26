@@ -170,8 +170,8 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   self.isEditing = false 
   self.wText = widget.textWidget:new{ x = 0, y = 0 , w = 500, text = "" }
   Window.addWidget(self,self.wText)
-  self.nodes = {}  -- id , x , y , text , w , h 
-  self.edges = {}  -- idFrom, idTo  
+  self.nodes = {}  -- id , x , y , text , w , h , color, backgroundColor
+  self.edges = {}  -- id1, id2  
  
   -- now we have the snapshot, we remove the full image and keep only the fileData
   self.im = nil
@@ -414,23 +414,101 @@ function Map:draw()
 
      -- print texts
      if self.isEditing then
-     for j=1,#self.nodes do
-	local nx, ny = self.nodes[j].x , self.nodes[j].y 
-	local width, height = self.nodes[j].w, self.nodes[j].h
-	nx, ny = nx / MAG , ny / MAG
-	width, height = width / MAG, height / MAG
-	if x + nx + width > 0 and x + nx < self.w and y + ny > 0 and y + ny < self.h then 
-	  local fontSize = math.floor(12 / MAG)
-	  if fontSize >= 4 and fontSize <= 40 then  -- don't print if too small or too big...
-    	  	love.graphics.setColor(255,255,255)
-    	  	love.graphics.rectangle("fill",x+nx, y+ny+1,width ,height )	
-    	  	love.graphics.setColor(0,0,0)
-	  	love.graphics.setFont( fonts[fontSize] )
-	  	love.graphics.printf( self.nodes[j].text, x+nx, y+ny+1, width , "left" )
-	  end
-	end
-     end
-     end
+
+  	local fontSize = math.floor(12 / MAG)
+  	if fontSize >= 4 and fontSize <= 40 then  -- don't print if too small or too big...
+
+       		-- draw edges first     
+     		for j=1,#self.nodes do
+			for k=1,#self.edges do
+				local edge = self.edges[k]
+				if edge.id1 == self.nodes[j].id or edge.id2 == self.nodes[j].id then
+
+				local id1, id2 = edge.id1, edge.id2
+				local node1, node2 = self:findNodeById(id1), self:findNodeById(id2) 
+
+				local nx1, ny1 = node1.x , node1.y 
+				local width1, height1 = node1.w, node1.h
+				nx1, ny1 = nx1 / MAG , ny1 / MAG
+				width1, height1 = width1 / MAG, height1 / MAG
+				if not node1.hide and x + nx1 + width1 > 0 and x + nx1 < self.w and y + ny1 > 0 and y + ny1 < self.h then 
+					-- we draw that node, it's inside map limits
+					node1.done = true
+				end
+
+				local nx2, ny2 = node2.x , node2.y 
+				local width2, height2 = node2.w, node2.h
+				nx2, ny2 = nx2 / MAG , ny2 / MAG
+				width2, height2 = width2 / MAG, height2 / MAG
+				if not node2.hide and x + nx2 + width2 > 0 and x + nx2 < self.w and y + ny2 > 0 and y + ny2 < self.h then 
+					-- we draw that node, it's inside map limits
+					node2.done = true
+				end
+				--[[	
+				if node1.done then
+    	  				love.graphics.setColor(0,0,0)
+    	  				love.graphics.rectangle("line",x+nx1, y+ny1+1,width1 ,height1,5,5 )	
+    	  				love.graphics.setColor(unpack(node1.backgroundColor))
+    	  				love.graphics.rectangle("fill",x+nx1, y+ny1+1,width1 ,height1,5,5 )	
+    	  				love.graphics.setColor(unpack(node1.color))
+	  				love.graphics.setFont( fonts[fontSize] )
+	  				love.graphics.printf( node1.text, x+nx1, y+ny1+1, width1 , "left" )
+				end
+
+				if node2.done then
+    	  				love.graphics.setColor(0,0,0)
+    	  				love.graphics.rectangle("line",x+nx2, y+ny2+1,width2 ,height2,5,5 )	
+    	  				love.graphics.setColor(unpack(node2.backgroundColor))
+    	  				love.graphics.rectangle("fill",x+nx2, y+ny2+1,width2 ,height2,5,5 )	
+    	  				love.graphics.setColor(unpack(node2.color))
+	  				love.graphics.setFont( fonts[fontSize] )
+	  				love.graphics.printf( node2.text, x+nx2, y+ny2+1, width2 , "left" )
+				end
+				--]]
+				-- draw the edge if the 2 nodes are visible
+				if node1.done and node2.done then
+					local sx1, sy1 = x+nx1+width1/2, y+ny1+height1/2
+					local sx2, sy2 = x+nx2+width2/2, y+ny2+height2/2
+    	  				love.graphics.setColor(0,0,0)
+					love.graphics.line(sx1,sy1,sx2,sy2)
+				end
+				--[[
+				-- mark both nodes as done, so we don't manage them anymore in that cycle
+				node1.done = true
+				node2.done = true
+				--]]
+				end -- if edge
+
+			end -- for edges
+     		end -- loop edges
+
+       		-- then draw remaining nodes
+     		for j=1,#self.nodes do
+
+			--if not self.nodes[j].done and not self.nodes[j].hide then
+			if not self.nodes[j].hide then
+				local nx, ny = self.nodes[j].x , self.nodes[j].y 
+				local width, height = self.nodes[j].w, self.nodes[j].h
+				nx, ny = nx / MAG , ny / MAG
+				width, height = width / MAG, height / MAG
+				if x + nx + width > 0 and x + nx < self.w and y + ny > 0 and y + ny < self.h then 
+    	  				love.graphics.setColor(0,0,0)
+    	  				love.graphics.rectangle("line",x+nx, y+ny+1,width ,height,5,5 )	
+    	  				love.graphics.setColor(unpack(self.nodes[j].backgroundColor))
+    	  				love.graphics.rectangle("fill",x+nx, y+ny+1,width ,height,5,5 )	
+    	  				love.graphics.setColor(unpack(self.nodes[j].color))
+	  				love.graphics.setFont( fonts[fontSize] )
+	  				love.graphics.printf( self.nodes[j].text, x+nx, y+ny+1, width , "left" )
+	  			end
+			end
+     		end -- loop nodes
+
+		-- now all nodes are drawn, reset them for next cycle
+     		for j=1,#self.nodes do self.nodes[j].done = false end
+	
+	end -- fontSize
+	
+     end -- isEditing
 
      -- draw pawns, if any
      if map.pawns then
@@ -616,6 +694,7 @@ function Map:update(dt)
 
 	-- move pawns progressively, if needed
 	-- restore their color (white) which may have been modified if they are current target of an arrow
+	-- do the same for all text zones
 	if self.kind =="map" then
 		for i=1,#self.pawns do
 			local p = self.pawns[i]
@@ -623,8 +702,13 @@ function Map:update(dt)
 			if p.x == p.moveToX and p.y == p.moveToY then p.timer = nil end -- remove timer in the end
 			p.color = theme.color.white
 		end	
+		for i=1,#self.nodes do
+			self.nodes[i].backgroundColor = theme.color.white
+			self.nodes[i].color = theme.color.black
+		end
+		-- update the edition zone if any
+		if self.isEditing then self.wText:update(dt) end
 	end
-
 
 	Window.update(self,dt)
 	end
@@ -847,25 +931,32 @@ function Map:click(x,y)
 
 			-- we were typing within a node and now we click somewhere else. This saves the Node
 			self.wText:unselect()		
-			io.write("having done a Node with text = '" .. self.wText:getText() .. "'\n")
 			local MAG = self.mag
 			local fontSize = math.floor(12) -- 12 is base font size at scale 1
           		if fontSize < 4 then fontSize = 4 elseif fontSize > 40 then fontSize = 40 end
-          		local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), MAX_TEXT_W_AT_SCALE_1 )
-          		local height = table.getn(wrappedtext)*(fontSize+3)
-			justSaved = {
-                                id = uuid(),
-                                x = math.floor(self.wText.x) , y = math.floor(self.wText.y) ,
-                                text = self.wText:getText() ,
-                                w = math.floor(width), h = math.floor(height)
-                                }
-			table.insert( self.nodes , justSaved )
-
+			local text = self.wText:getText()
+			-- if the node already exists, we remove it first
+			local n, index = self:findNodeById(self.wText.id) 
+			if n then table.remove( self.nodes, index) end
+			-- we store and save a node only if not empty ...
+			if text ~= "" then  
+          			local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), MAX_TEXT_W_AT_SCALE_1 )
+          			local height = table.getn(wrappedtext)*(fontSize+3)
+				justSaved = {
+                                	id = self.wText.id, x = math.floor(self.wText.x) , y = math.floor(self.wText.y) , text = self.wText:getText() , 
+					w = math.floor(width), h = math.floor(height)
+                                	}
+				table.insert( self.nodes , justSaved )
+			elseif n then
+				-- text is empty and we just removed the node, maybe we should remove edges as well
+				for j=1,#self.edges do
+				  if self.edges[j].id1 == self.wText.id or self.edges[j].id2 == self.wText.id then
+					table.remove( self.edges , j )
+				  end
+				end
+			end
 			-- save file
 			self:saveText()
-
-			-- we delegate the click to the window
-			--Window.click(self,x,y)
 
 		end
 
@@ -874,26 +965,31 @@ function Map:click(x,y)
 			-- we click on an existing node 	
 			io.write("want to move node " .. node.id .. "\n")
 			moveText = node
+			editingNode = true
 
 		elseif node and (not love.keyboard.isDown("lctrl")) then
 			io.write("editing existing node " .. node.id .. "\n")
+			self.wText.id = node.id 
 			self.wText.x , self.wText.y = node.x , node.y 	-- move the input zone to the existing node
                         self.wText.head = node.text 			-- and with the same text
+			self.wText:setCursorPosition() 			-- we edit end of node 
                         self.wText:select()
-			-- remove the existing node, we will recreate it eventually
-			local index = 1
-			for i=1,#self.nodes do if self.nodes[i] == node then index = i ; io.write("removing node at index " .. index .. "\n") end end 
-			table.remove( self.nodes , index ) 
+			-- don't display the existing node, we will replace it eventually
+			node.hide = true
+			editingNode = true
 	
 		elseif love.keyboard.isDown("lctrl") then
 			-- we edit a new node
 			self.wText.x , self.wText.y = (x - zx ) * self.mag , (y - zy) * self.mag
 			self.wText.head = '' 
+			self.wText.id = uuid()
 			self.wText:select()
+			editingNode = true
 
 		else
 			-- we click somewhere...
 			-- we delegate the click to the window
+			editingNode = false
 			Window.click(self,x,y)
 		end
 
@@ -936,8 +1032,11 @@ end
 
 
 function Map:writeNode( file, node )
+  if node.hide then return end
   local text = luastrsanitize(node.text)
-  file:write("{ id=\"" .. node.id .. "\", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
+  if text ~= "" then
+    file:write("{ id=\"" .. node.id .. "\", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
+  end
   end
 
 function Map:saveText()
@@ -949,7 +1048,53 @@ function Map:saveText()
   for i=1,#self.nodes do
 	self:writeNode( file, self.nodes[i] )
   end
+  file:write("},{\n")
+  for i=1,#self.edges do
+  	file:write("{ id1=\"" .. self.edges[i].id1 .. "\", id2=\"" .. self.edges[i].id2 .. "\" },\n")
+  end
   file:write("}\n")
+  io.close(file)
+  end
+
+-- find an edge (and its index) given one node only
+function Map:findEdgeByOneNode(id)
+  for i=1,#self.edges do
+	if (self.edges[i].id1 == id or self.edges[i].id2 == id) then
+		return self.edges[i], i
+	end
+  end
+  return nil
+  end 
+
+-- find the edge and its index between id1 or id2 (direction does not matter)
+function Map:findEdge(id1,id2)
+  for i=1,#self.edges do
+	if (self.edges[i].id1 == id1 and self.edges[i].id2 == id2) or
+	   (self.edges[i].id1 == id2 and self.edges[i].id2 == id1) then
+		return self.edges[i], i 
+	end
+  end
+  return nil, 0
+  end
+
+-- if the edge does not exist, create it
+-- if it already exists, remove it
+function Map:manageEdge(id1,id2)
+  local e, i = self:findEdge(id1,id2)
+  if e then 
+ 	table.remove( self.edges, i )
+	io.write("removing edge " .. id1 .. " " .. id2 .. "\n")
+  else
+	table.insert( self.edges, { id1=id1, id2=id2 } )
+	io.write("adding edge " .. id1 .. " " .. id2 .. "\n")
+  end 
+  end
+
+function Map:findNodeById(id)
+  for i=1,#self.nodes do
+    if self.nodes[i].id == id then return self.nodes[i], i end 
+  end
+  return nil, 0
   end
 
 return Map

@@ -84,6 +84,8 @@ function widget.textWidget:new( t )
   new.textSelected = ""
   new.textSelectedPosition = 0
   new.xOffset = 0
+  new.color = theme.color.black
+  new.backgroundColor = theme.color.white
   new:setCursorPosition() 
   return new
   end
@@ -201,14 +203,16 @@ function widget.textWidget:draw()
   local mag = 1.0
   if self.parent then mag = self.parent.mag end
   if self.selected then
-    love.graphics.setColor(255,255,255)
-    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy,self.w,self.h)
+    love.graphics.setColor(0,0,0)
+    love.graphics.rectangle("line",x/mag+zx,y/mag+zy,self.w,self.h, 5, 5)
+    love.graphics.setColor(unpack(self.backgroundColor))
+    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy,self.w,self.h, 5, 5)
     love.graphics.setColor(0,0,0)
     if self.cursorDraw then 
 	love.graphics.line(self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy, self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy+self.h) 
     end
   end
-  love.graphics.setColor(0,0,0)
+  love.graphics.setColor(unpack(self.color))
   love.graphics.setFont( theme.fontRound )
   love.graphics.setScissor(x/mag+zx,y/mag+zy,self.w,self.h)
   love.graphics.print(self.head..self.trail,x/mag+zx+self.xOffset,y/mag+zy)

@@ -49,7 +49,7 @@ local popupButtonText = {
 	potion="Donne une potion aléatoirement",
 	magic="Donne un objet magique aléatoirement",
 	name="Donne aléatoirement une série de noms de PNJ",
-	edit="Mode édition de Map",
+	edit="Mode édition de Map. Permet de saisir, modifier, bouger du texte sur la Map",
 	}
 
 -- sink motion
