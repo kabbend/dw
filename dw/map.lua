@@ -435,7 +435,7 @@ function Map:draw()
      if self.isEditing then
 
   	local fontSize = math.floor((12 / MAG)+0.5)
-  	if fontSize >= 4 and fontSize <= 40 then  -- don't print if too small or too big...
+  	if fontSize >= 2 and fontSize <= 40 then  -- don't print if too small or too big...
 	love.graphics.setLineWidth( 2 )
 
        		-- draw edges first     
@@ -451,19 +451,19 @@ function Map:draw()
 				local width1, height1 = node1.w, node1.h
 				nx1, ny1 = nx1 / MAG , ny1 / MAG
 				width1, height1 = width1 / MAG, height1 / MAG
-				if not node1.hide and x + nx1 + width1 > 0 and x + nx1 < self.w and y + ny1 > 0 and y + ny1 < self.h then 
+				--if not node1.hide and x + nx1 + width1 > 0 and x + nx1 < self.w and y + ny1 > 0 and y + ny1 < self.h then 
 					-- we draw that node, it's inside map limits
-					node1.done = true
-				end
+					--node1.done = true
+				--end
 
 				local nx2, ny2 = node2.x , node2.y 
 				local width2, height2 = node2.w, node2.h
 				nx2, ny2 = nx2 / MAG , ny2 / MAG
 				width2, height2 = width2 / MAG, height2 / MAG
-				if not node2.hide and x + nx2 + width2 > 0 and x + nx2 < self.w and y + ny2 > 0 and y + ny2 < self.h then 
+				--if not node2.hide and x + nx2 + width2 > 0 and x + nx2 < self.w and y + ny2 > 0 and y + ny2 < self.h then 
 					-- we draw that node, it's inside map limits
-					node2.done = true
-				end
+					--node2.done = true
+				--end
 				--[[	
 				if node1.done then
     	  				love.graphics.setColor(0,0,0)
@@ -486,12 +486,12 @@ function Map:draw()
 				end
 				--]]
 				-- draw the edge if the 2 nodes are visible
-				if node1.done and node2.done then
+				--if node1.done and node2.done then
 					local sx1, sy1 = x+nx1+width1/2, y+ny1+height1/2
 					local sx2, sy2 = x+nx2+width2/2, y+ny2+height2/2
     	  				love.graphics.setColor(theme.color.red)
 					love.graphics.line(sx1,sy1,sx2,sy2)
-				end
+				--end
 				--[[
 				-- mark both nodes as done, so we don't manage them anymore in that cycle
 				node1.done = true

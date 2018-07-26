@@ -1538,8 +1538,9 @@ function love.load( args )
     math.randomseed( os.time() )
 
     -- load fonts for map text edition
-    for i=4,40 do 			-- load same font with different sizes
+    for i=2,40 do 			-- load same font with different sizes
       fonts[i] = love.graphics.newFont( "yui/yaoui/fonts/georgia.ttf" , i ) 
+      fonts[i]:setFilter( "nearest", "nearest" )
     end
     end
 
