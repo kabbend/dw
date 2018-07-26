@@ -84,6 +84,7 @@ fullBinary		= false			-- if true, the server will systematically send binary fil
 mouseMove		= false			-- a window is being moved
 pawnMove 		= nil			-- pawn currently moved by mouse movement
 moveText		= nil
+resizeText		= nil
 editingNode		= false
 
 -- drag & drop data
@@ -529,6 +530,13 @@ function love.mousereleased( x, y )
 		if w.class == "map" then io.write("releasing memory for map " .. w.title .. "\n"); w.im = nil end 
 	end
 
+	-- we were resizing a text (within a Map). We stop now
+	if resizeText then
+		resizeText = false
+		if w then w:saveText() end
+		return
+	end
+
 	-- we were moving a Text (within a Map). We stop now
 	if w and w.isEditing and moveText then
 		local sourcemap = layout:getFocus()
@@ -940,7 +948,14 @@ layout:mousemoved(x,y,dx,dy)
 local w = layout:getFocus()
 if not w then return end
 
-if mouseResize then
+if resizeText then
+
+	resizeText.w = resizeText.w + dx * w.mag
+	if resizeText.w <= 100 then resizeText.w = 100 end
+	local width, wrappedtext = fonts[12]:getWrap( resizeText.text , resizeText.w )
+        resizeText.h = table.getn(wrappedtext)*(12+3)
+
+elseif mouseResize then
 
 	local zx,zy = w:WtoS(0,0)
 	local mx,my = w:WtoS(w.w, w.h)

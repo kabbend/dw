@@ -209,6 +209,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
   self.maskMinX, self.maskMaxX, self.maskMinY, self.maskMaxY = 100 * self.w , -100 * self.w, 100 * self.h, - 100 * self.h 
 end
 
+-- return a text node if over, and resize if over the extend zone
 function Map:isInsideText(x,y)
   local W,H=self.layout.W,self.layout.H
   local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
@@ -216,10 +217,14 @@ function Map:isInsideText(x,y)
     local nx, ny = zx + self.nodes[i].x / self.mag, zy + self.nodes[i].y / self.mag
     local nw, nh = self.nodes[i].w / self.mag, self.nodes[i].h / self.mag
     if x >= nx and x <= nx + nw and y >= ny and y <= ny + nh then
-	return self.nodes[i]
+	if x <= nx + nw - 5 then
+		return self.nodes[i], false
+	else
+		return self.nodes[i], true -- is over the resize zone 
+	end
     end
   end
-  return nil 
+  return nil, false 
 end
 
 function Map:setQuad(x1,y1,x2,y2)
@@ -415,7 +420,7 @@ function Map:draw()
      -- print texts
      if self.isEditing then
 
-  	local fontSize = math.floor(12 / MAG)
+  	local fontSize = math.floor((12 / MAG)+0.5)
   	if fontSize >= 4 and fontSize <= 40 then  -- don't print if too small or too big...
 	love.graphics.setLineWidth( 2 )
 
@@ -497,6 +502,8 @@ function Map:draw()
     	  				love.graphics.rectangle("line",x+nx, y+ny+1,width ,height,5,5 )	
     	  				love.graphics.setColor(unpack(self.nodes[j].backgroundColor))
     	  				love.graphics.rectangle("fill",x+nx, y+ny+1,width ,height,5,5 )	
+    	  				love.graphics.setColor(0,0,0)
+    	  				love.graphics.line(x+nx+width-5,y+ny,x+nx+width-5,y+ny+height)	
     	  				love.graphics.setColor(unpack(self.nodes[j].color))
 	  				love.graphics.setFont( fonts[fontSize] )
 	  				love.graphics.printf( self.nodes[j].text, x+nx, y+ny+1, width , "left" )
@@ -934,15 +941,14 @@ function Map:click(x,y)
 
 			-- we were typing within a node and now we click somewhere else. This saves the Node
 			local MAG = self.mag
-			local fontSize = math.floor(12) -- 12 is base font size at scale 1
-          		if fontSize < 4 then fontSize = 4 elseif fontSize > 40 then fontSize = 40 end
+			local fontSize = 12 -- 12 is base font size at scale 1
 			local text = self.wText:getText()
 			-- if the node already exists, we remove it first
 			local n, index = self:findNodeById(self.wText.id) 
 			if n then table.remove( self.nodes, index) end
 			-- we store and save a node only if not empty ...
 			if text ~= "" then  
-          			local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), MAX_TEXT_W_AT_SCALE_1 )
+          			local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), self.wText.finalWidth )
           			local height = table.getn(wrappedtext)*(fontSize+3)
 				justSaved = {
                                 	id = self.wText.id, x = math.floor(self.wText.x) , y = math.floor(self.wText.y) , text = self.wText:getText() , 
@@ -964,11 +970,17 @@ function Map:click(x,y)
 
 		end
 
-		local node = self:isInsideText(x,y)
+		local node, resize = self:isInsideText(x,y)
 		if node and love.keyboard.isDown("lctrl") then
 			-- we click on an existing node 	
 			io.write("moving node " .. node.id .. "\n")
 			moveText = node
+			editingNode = true
+
+		elseif node and resize and (not love.keyboard.isDown("lctrl")) then
+			-- we resize an existing node 	
+			io.write("resizing node " .. node.id .. "\n")
+			resizeText = node
 			editingNode = true
 
 		elseif node and (not love.keyboard.isDown("lctrl")) then
@@ -979,6 +991,7 @@ function Map:click(x,y)
                         self.wText.trail = '' 				-- and with the same text
 			self.wText.xOffset = node.xOffset or 0		-- and same text and cursor position
 			self.wText:setCursorPosition() 			-- we edit end of node 
+			self.wText.finalWidth = node.w			-- get same width when we save node
                         self.wText:select()
 			-- don't display the existing node, we will replace it eventually
 			node.hide = true
@@ -990,6 +1003,7 @@ function Map:click(x,y)
 			self.wText.head = '' 
                         self.wText.trail = '' 		
 			self.wText.id = uuid()
+			self.wText.finalWidth = MAX_TEXT_W_AT_SCALE_1 	-- by default
 			self.wText:select()
 			editingNode = true
 
