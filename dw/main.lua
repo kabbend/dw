@@ -83,6 +83,7 @@ fullBinary		= false			-- if true, the server will systematically send binary fil
 -- various mouse movements
 mouseMove		= false			-- a window is being moved
 pawnMove 		= nil			-- pawn currently moved by mouse movement
+moveText		= nil
 
 -- drag & drop data
 dragMove		= false
@@ -512,6 +513,15 @@ function love.mousereleased( x, y )
 		if w.class == "map" then io.write("releasing memory for map " .. w.title .. "\n"); w.im = nil end 
 	end
 
+	-- we were moving a Text (within a Map). We stop now
+	if w and w.isEditing and moveText then
+  		local zx,zy = -( w.x * 1/w.mag - layout.W / 2), -( w.y * 1/w.mag - layout.H / 2)
+		moveText.x , moveText.y = (x-zx)*w.mag, (y-zy)*w.mag 
+		moveText = nil
+		w:saveText()
+		return
+	end
+
 	-- we were dragging an object, we drop it 
 	if dragMove then
 		dragMove = false
@@ -778,6 +788,8 @@ function love.mousepressed( x, y , button )
 	if window and window.class == "map" then
 
 		local map = window
+
+		if moveText then return end
 
 		local p, hitClicked , _ , action = map:isInsidePawn(x,y)
 

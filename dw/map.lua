@@ -9,9 +9,6 @@ local codepage		= require 'codepage'		-- windows cp1252 support
 local widget		= require 'widget'
 
 local MAX_TEXT_W_AT_SCALE_1	= 500
-local BIGGER_SHARP		= 2
-local BIGGER_2_SHARP		= 1.6
-local BIGGER_3_SHARP		= 1.3
 
 local function uuid()
     local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
@@ -210,6 +207,19 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
 
   -- outmost limits of the current mask
   self.maskMinX, self.maskMaxX, self.maskMinY, self.maskMaxY = 100 * self.w , -100 * self.w, 100 * self.h, - 100 * self.h 
+end
+
+function Map:isInsideText(x,y)
+  local W,H=self.layout.W,self.layout.H
+  local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
+  for i=1,#self.nodes do
+    local nx, ny = zx + self.nodes[i].x / self.mag, zy + self.nodes[i].y / self.mag
+    local nw, nh = self.nodes[i].w / self.mag, self.nodes[i].h / self.mag
+    if x >= nx and x <= nx + nw and y >= ny and y <= ny + nh then
+	return self.nodes[i]
+    end
+  end
+  return nil 
 end
 
 function Map:setQuad(x1,y1,x2,y2)
@@ -831,7 +841,8 @@ function Map:click(x,y)
 
 	else
 		-- we are in edition mode
- 
+
+		local justSaved = nil 
 		if self.wText.selected then
 
 			-- we were typing within a node and now we click somewhere else. This saves the Node
@@ -842,21 +853,39 @@ function Map:click(x,y)
           		if fontSize < 4 then fontSize = 4 elseif fontSize > 40 then fontSize = 40 end
           		local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), MAX_TEXT_W_AT_SCALE_1 )
           		local height = table.getn(wrappedtext)*(fontSize+3)
-			table.insert( self.nodes , {
-				id = uuid(),
-				x = math.floor(self.wText.x) , y = math.floor(self.wText.y) ,
-				text = self.wText:getText() ,
-				w = math.floor(width), h = math.floor(height)
-				})
+			justSaved = {
+                                id = uuid(),
+                                x = math.floor(self.wText.x) , y = math.floor(self.wText.y) ,
+                                text = self.wText:getText() ,
+                                w = math.floor(width), h = math.floor(height)
+                                }
+			table.insert( self.nodes , justSaved )
 
 			-- save file
 			self:saveText()
 
 			-- we delegate the click to the window
-			Window.click(self,x,y)
+			--Window.click(self,x,y)
 
+		end
+
+		local node = self:isInsideText(x,y)
+		if node and love.keyboard.isDown("lctrl") then
+			-- we click on an existing node 	
+			io.write("want to move node " .. node.id .. "\n")
+			moveText = node
+
+		elseif node and (not love.keyboard.isDown("lctrl")) then
+			io.write("editing existing node " .. node.id .. "\n")
+			self.wText.x , self.wText.y = node.x , node.y 	-- move the input zone to the existing node
+                        self.wText.head = node.text 			-- and with the same text
+                        self.wText:select()
+			-- remove the existing node, we will recreate it eventually
+			local index = 1
+			for i=1,#self.nodes do if self.nodes[i] == node then index = i ; io.write("removing node at index " .. index .. "\n") end end 
+			table.remove( self.nodes , index ) 
+	
 		elseif love.keyboard.isDown("lctrl") then
-	 	
 			-- we edit a new node
 			self.wText.x , self.wText.y = (x - zx ) * self.mag , (y - zy) * self.mag
 			self.wText.head = '' 
