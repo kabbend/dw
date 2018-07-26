@@ -215,7 +215,7 @@ function widget.textWidget:draw()
   love.graphics.setColor(unpack(self.color))
   love.graphics.setFont( theme.fontRound )
   love.graphics.setScissor(x/mag+zx,y/mag+zy,self.w,self.h)
-  love.graphics.print(self.head..self.trail,x/mag+zx+self.xOffset,y/mag+zy)
+  love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy))
   if self.textSelected ~= "" then
     love.graphics.setColor(155,155,155,155)
     local w = self.cursorPosition - self.textSelectedPosition

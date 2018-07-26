@@ -520,7 +520,7 @@ function Map:draw()
     	  				love.graphics.line(x+nx+width-5,y+ny,x+nx+width-5,y+ny+height)	
     	  				love.graphics.setColor(unpack(self.nodes[j].color))
 	  				love.graphics.setFont( fonts[fontSize] )
-	  				love.graphics.printf( self.nodes[j].text, x+nx, y+ny+1, width , "left" )
+	  				love.graphics.printf( self.nodes[j].text, math.floor(x+nx), math.floor(y+ny+1), math.floor(width) , "left" )
 	  			end
 			end
      		end -- loop nodes
@@ -569,18 +569,18 @@ function Map:draw()
 		       		love.graphics.rectangle( "fill", zx, zy + f / map.mag, f / map.mag, f / map.mag)
         			love.graphics.setFont(theme.fontSearch)
 		       		love.graphics.setColor(255,255,255) 
-				love.graphics.print( PNJTable[index].hits , zx, zy , 0, s/map.mag, s/map.mag )
-				love.graphics.print( PNJTable[index].id , zx, zy + 2 * f/map.mag , 0, s/map.mag, s/map.mag )
+				love.graphics.print( PNJTable[index].hits , math.floor(zx), math.floor(zy) , 0, s/map.mag, s/map.mag )
+				love.graphics.print( PNJTable[index].id , math.floor(zx), math.floor(zy + 2 * f/map.mag) , 0, s/map.mag, s/map.mag )
 		       		love.graphics.setColor(0,0,0) 
-				love.graphics.print( "D" .. PNJTable[index].armor , zx, zy + f/map.mag, 0, s/map.mag, s/map.mag )
+				love.graphics.print( "D" .. PNJTable[index].armor , math.floor(zx), math.floor(zy + f/map.mag), 0, s/map.mag, s/map.mag )
 				-- display actions if PJ
 				if PNJTable[index].PJ then
 		       		  if PNJTable[index].actions == PJMaxAction then love.graphics.setColor(theme.color.red) else love.graphics.setColor(theme.color.green) end
 		       		  love.graphics.rectangle( "fill", zx + (g*4), zy , g , (PNJTable[index].actions+1) * g )
 		       		  love.graphics.setColor(0,0,0) 
-				  love.graphics.print( "A", zx + (g*4) , zy , 0, s/map.mag, s/map.mag )
+				  love.graphics.print( "A", math.floor(zx + (g*4)) , math.floor(zy) , 0, s/map.mag, s/map.mag )
 				  for j=1,PNJTable[index].actions do
-					love.graphics.print( j , zx + (g*4) , zy + j * g, 0, s/map.mag, s/map.mag )
+					love.graphics.print( j , math.floor(zx + (g*4)) , math.floor(zy + j * g), 0, s/map.mag, s/map.mag )
 				  end
 				end 
 				-- display icons if PJ
@@ -600,7 +600,8 @@ function Map:draw()
 	     end
      end
 
-     -- print visible 
+     -- print visible
+     --[[ 
      if atlas:isVisible( map ) then
 	local char = "V" -- a priori
 	if map.sticky then char = "S" end -- stands for S(ticky)
@@ -610,7 +611,6 @@ function Map:draw()
 	local fy = math.max( y + (20/map.mag), 0 )
 	love.graphics.print( char , fx , fy , 0, 2/map.mag, 2/map.mag) -- bigger letters
      end
-
      -- print search zone if scenario
      if self.kind == "scenario" then
       	love.graphics.setColor(0,0,0)
@@ -619,7 +619,8 @@ function Map:draw()
       	-- print number of the search result is needed
       	if searchIterator then love.graphics.printf( "( " .. searchIndex .. " [" .. string.format("%.2f", searchPertinence) .. "] out of " .. 
 						           searchSize .. " )", 800, H - 40, 400) end
-    end
+      end
+     --]]
 
     love.graphics.setScissor() 
 
