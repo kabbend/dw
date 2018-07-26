@@ -91,6 +91,13 @@ function projectorWindow:draw()
   end
 
 function projectorWindow:click(x,y)
+  	local W,H=self.layout.W, self.layout.H
+    	local zx,zy = -( self.x - W / 2), -( self.y - H / 2)
+	if self.o then io.write("click on projector with self.o set\n") end
+	if y >= zy and self.o and self.o.class == "map" and atlas:isVisible(self.o.map) and not layout:getDisplay(self.o.map) then
+	  -- we click inside the projector and it's a map. If this map is not open, we open it now
+	  layout:setDisplay(self.o.map, true)
+	end
   	Window.click(self,x,y)
 	end
 
