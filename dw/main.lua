@@ -1386,8 +1386,12 @@ function init()
     layout:addWindow( storyWindow , 	false, "storyWindow" )
     layout:addWindow( actionWindow , 	false, "actionWindow" )
 
-    io.write("base directory   : " .. baseDirectory .. "\n") ; layout.notificationWindow:addMessage("base directory : " .. baseDirectory .. "\n")
-    io.write("scenario directory : " .. fadingDirectory .. "\n") ; layout.notificationWindow:addMessage("scenario : " .. fadingDirectory .. "\n")
+    io.write("base directory   : " .. baseDirectory .. "\n") ; layout.notificationWindow:addMessage("Base directory : " .. baseDirectory .. "\n")
+    if fadingDirectory and fadingDirectory ~= "" then
+    	io.write("scenario directory : " .. fadingDirectory .. "\n") ; layout.notificationWindow:addMessage("Scenario directory : " .. fadingDirectory )
+    else
+    	io.write("scenario directory : " .. fadingDirectory .. "\n") ; layout.notificationWindow:addMessage("Scenario directory : None specified." )
+    end
 
     if __WINDOWS__ then
 
@@ -1438,12 +1442,16 @@ function init()
     local directory, scenarioDirectory = baseDirectory, fadingDirectory
     if __WINDOWS__ then directory, scenarioDirectory = baseDirectoryCp1252, fadingDirectoryCp1252 end
 
-    RpgClasses = rpg.loadClasses{ 	directory .. sep .. "data" , 
+    if scenarioDirectory and scenarioDirectory ~= "" then
+    	RpgClasses = rpg.loadClasses{ 	directory .. sep .. "data" , 
 			         	directory .. sep .. scenarioDirectory .. sep .. "data" } 
+    else
+    	RpgClasses = rpg.loadClasses{ 	directory .. sep .. "data"    }
+    end
 
     if not RpgClasses or #RpgClasses == 0 then 
 	    
-    	layout.notificationWindow:addMessage("Warning: No data file found! No PC or NPC can be created") -- not blocking, but severe
+    	layout.notificationWindow:addMessage("Severe warning: No data file found! No PC or NPC can be created") -- not blocking, but severe
 
     else
 

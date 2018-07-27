@@ -144,7 +144,9 @@ function widget.textWidget:select()
 			self:setCursorPosition()
 			if self.cursorPosition + self.xOffset < 0 then
 				self.xOffset = self.xOffset + fonts[12]:getWidth(remove)
-			end
+			elseif self.cursorPosition + self.xOffset > self.w then
+                        	self.xOffset = self.w - self.cursorPosition
+                	end
 		end
 		end
 
@@ -183,6 +185,8 @@ function widget.textWidget:select()
 		self:setCursorPosition()
 		if self.cursorPosition + self.xOffset < 0 then
 			self.xOffset = self.xOffset + fonts[12]:getWidth(remove)
+		elseif self.cursorPosition + self.xOffset > self.w then
+			self.xOffset = self.w - self.cursorPosition 
 		end
 		end 
 
