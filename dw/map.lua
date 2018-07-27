@@ -228,8 +228,8 @@ function Map:isInsideText(x,y)
   local W,H=self.layout.W,self.layout.H
   local zx,zy = -( self.x * 1/self.mag - W / 2), -( self.y * 1/self.mag - H / 2)
   for i=1,#self.nodes do
-    local nx, ny = zx + self.nodes[i].x / self.mag, zy + self.nodes[i].y / self.mag
-    local nw, nh = self.nodes[i].w / self.mag, self.nodes[i].h / self.mag
+    local nx, ny = zx + (self.nodes[i].x - 2 ) / self.mag , zy + (self.nodes[i].y - 2 ) / self.mag 
+    local nw, nh = (self.nodes[i].w + 4) / self.mag, (self.nodes[i].h + 4 ) / self.mag
     if x >= nx and x <= nx + nw and y >= ny and y <= ny + nh then
 	if x <= nx + nw - 5 then
 		return self.nodes[i], false
@@ -513,14 +513,14 @@ function Map:draw()
 				width, height = width / MAG, height / MAG
 				if x + nx + width > 0 and x + nx < self.w and y + ny > 0 and y + ny < self.h then 
     	  				love.graphics.setColor(0,0,0)
-    	  				love.graphics.rectangle("line",x+nx, y+ny+1,width ,height,5,5 )	
+    	  				love.graphics.rectangle("line",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
     	  				love.graphics.setColor(unpack(self.nodes[j].backgroundColor))
-    	  				love.graphics.rectangle("fill",x+nx, y+ny+1,width ,height,5,5 )	
+    	  				love.graphics.rectangle("fill",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
     	  				love.graphics.setColor(0,0,0)
-    	  				love.graphics.line(x+nx+width-5,y+ny,x+nx+width-5,y+ny+height)	
+    	  				love.graphics.line(x+nx+width-3,y+ny,x+nx+width-3,y+ny+height)	
     	  				love.graphics.setColor(unpack(self.nodes[j].color))
 	  				love.graphics.setFont( fonts[fontSize] )
-	  				love.graphics.printf( self.nodes[j].text, math.floor(x+nx), math.floor(y+ny+1), math.floor(width) , "left" )
+	  				love.graphics.printf( self.nodes[j].text, math.floor(x+nx), math.floor(y+ny), math.floor(width) , "left" )
 	  			end
 			end
      		end -- loop nodes
@@ -964,7 +964,7 @@ function Map:click(x,y)
 			-- we store and save a node only if not empty ...
 			if text ~= "" then  
           			local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), self.wText.finalWidth )
-          			local height = table.getn(wrappedtext)*(fontSize+3)
+          			local height = (table.getn(wrappedtext)+1)* math.floor(fontSize*1.2+0.5)
 				justSaved = {
                                 	id = self.wText.id, x = math.floor(self.wText.x) , y = math.floor(self.wText.y) , text = self.wText:getText() , 
 					w = math.floor(width), h = math.floor(height), xOffset = math.floor(self.wText.xOffset)

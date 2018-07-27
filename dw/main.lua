@@ -953,7 +953,7 @@ if resizeText then
 	resizeText.w = resizeText.w + dx * w.mag
 	if resizeText.w <= 100 then resizeText.w = 100 end
 	local width, wrappedtext = fonts[12]:getWrap( resizeText.text , resizeText.w )
-        resizeText.h = table.getn(wrappedtext)*(12+3)
+        resizeText.h = (table.getn(wrappedtext)+1)*(12+3)
 
 elseif mouseResize then
 
@@ -1539,7 +1539,7 @@ function love.load( args )
 
     -- load fonts for map text edition
     for i=2,40 do 			-- load same font with different sizes
-      fonts[i] = love.graphics.newFont( "yui/yaoui/fonts/georgia.ttf" , i ) 
+      fonts[i] = love.graphics.newFont("yui/yaoui/fonts/PlayfairDisplay-Regular.otf",i)
       fonts[i]:setFilter( "nearest", "nearest" )
     end
     end
