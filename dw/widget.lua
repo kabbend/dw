@@ -84,8 +84,9 @@ function widget.textWidget:new( t )
   new.trail = ""
   new.textSelected = ""
   new.textSelectedPosition = 0
-  new.xOffset = 0
-  new.lineOffset = 0
+  new.xOffset = 0		-- if the line is too long, we shift print on the left (negative offset) so we always sees the end
+  new.cursorLineOffset = 0	-- vertical position of the cursor: 0 if we are on last line (the default), negative otherwise. It's a number of lines, not pixels
+  new.lineOffset = 0		-- number of lines, used as an offset to display rectangle
   new.color = theme.color.black
   new.backgroundColor = theme.color.white
   new:setCursorPosition() 
@@ -93,15 +94,36 @@ function widget.textWidget:new( t )
   end
 
 function widget.textWidget:select() 
+
 	self.selected = true; 
 	self.cursorTimer = 0
+
+	-- in this version we always select the end of the text
+	-- hence no cursor line offset (last line), xOffset based on last line length
+	self.cursorLineOffset = 0
+
+	-- retrieve text xOffset based on last line 
+	local ll = self:lastLine()
+	local llsize = fonts[12]:getWidth(ll)
+	if llsize > self.w then
+		self.xOffset = self.w - llsize -- negative offset  
+	else
+		self.xOffset = 0
+	end
+
+	-- retrieve lineOffset based on number of lines
+	local s = self.head .. self.trail
+	for i=1,string.len(s) do
+		if string.sub(s,i,i) == '\n' then self.lineOffset = self.lineOffset + 1 end
+	end
 
 	textActiveCallback = function(t) 
 		self.head = self.head .. t 
 		if t == "\n" then
 			self.lineOffset = self.lineOffset + 1
 			self.xOffset = 0
-		elseif fonts[12]:getWidth( self.head .. self.trail ) > self.w - fonts[12]:getWidth(t) then
+		--elseif fonts[12]:getWidth( self.head .. self.trail ) > self.w - fonts[12]:getWidth(t) then
+		elseif fonts[12]:getWidth( self:lastLine() .. t ) > self.w then
 			self.xOffset = self.xOffset - fonts[12]:getWidth(t)
 		end 
 		self:setCursorPosition() 
@@ -148,6 +170,9 @@ function widget.textWidget:select()
 			remove = string.sub(self.head,byteoffset)
 			self.head = string.sub(self.head, 1, byteoffset - 1) 
 		end 
+		if remove == "\n" then
+			self.cursorLineOffset = self.cursorLineOffset - 1
+		end
 		self.trail = remove .. self.trail
 		if love.keyboard.isDown("lshift") then
 			if self.textSelected == "" then self.textSelectedPosition = self.cursorPosition end
@@ -169,6 +194,9 @@ function widget.textWidget:select()
 			remove = string.sub(self.trail,1,byteoffset-1)
 			self.trail = string.sub(self.trail, byteoffset) 
 		end 
+		if remove == "\n" then
+			self.cursorLineOffset = self.cursorLineOffset + 1
+		end
 		self.head = self.head .. remove 
 		if love.keyboard.isDown("lshift") then
 			if self.textSelected == "" then self.textSelectedPosition = self.cursorPosition end
@@ -187,6 +215,8 @@ function widget.textWidget:select()
 function widget.textWidget:unselect() 
 	if self.selected then 
 		self.xOffset = 0
+		self.lineOffset = 0
+		self.cursorLineOffset = 0
 		self.selected = false
 		textActiveCallback = nil 
 		textActiveBackspaceCallback = nil 
@@ -197,7 +227,7 @@ function widget.textWidget:unselect()
 	end 
 	end
 
-function widget.textWidget:setCursorPosition()
+function widget.textWidget:lastLine()
   -- get the last carriage return, or the beginning of head
   local rewind = "" 
   local i = string.len(self.head)
@@ -206,7 +236,11 @@ function widget.textWidget:setCursorPosition()
 	if rewind == "\n" then break end
 	i = i - 1
   end
-  local s = string.sub(self.head,i,string.len(self.head))
+  return string.sub(self.head,i,string.len(self.head))
+  end
+
+function widget.textWidget:setCursorPosition()
+  local s = self:lastLine()
   self.cursorPosition = fonts[12]:getWidth( s ) 
   end
 
@@ -227,7 +261,11 @@ function widget.textWidget:draw()
     love.graphics.rectangle("fill",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
     love.graphics.setColor(0,0,0)
     if self.cursorDraw then 
-	love.graphics.line(self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy, self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy+self.h) 
+	love.graphics.line(	self.cursorPosition + x/mag + zx + self.xOffset, 
+				y/mag+zy+self.cursorLineOffset*fontSize, 
+				self.cursorPosition + x/mag + zx + self.xOffset, 
+				y/mag+zy+self.cursorLineOffset*fontSize+self.h
+			  ) 
     end
   end
   love.graphics.setColor(unpack(self.color))

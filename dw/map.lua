@@ -969,7 +969,8 @@ function Map:click(x,y)
           			local height = (table.getn(wrappedtext)+1)* math.floor(fontSize*1.2+0.5)
 				justSaved = {
                                 	id = self.wText.id, x = math.floor(self.wText.x) , y = math.floor(self.wText.y) , text = self.wText:getText() , 
-					w = math.floor(width), h = math.floor(height), xOffset = math.floor(self.wText.xOffset)
+					w = math.floor(width), h = math.floor(height), 
+					--xOffset = math.floor(self.wText.xOffset), lineOffset = self.wText.lineOffset
                                 	}
 				table.insert( self.nodes , justSaved )
 			elseif n then
@@ -1006,7 +1007,9 @@ function Map:click(x,y)
 			self.wText.x , self.wText.y = node.x , node.y 	-- move the input zone to the existing node
                         self.wText.head = node.text 			-- and with the same text
                         self.wText.trail = '' 				-- and with the same text
-			self.wText.xOffset = node.xOffset or 0		-- and same text and cursor position
+			--self.wText.xOffset = node.xOffset or 0		-- and same text and cursor position
+			--self.wText.lineOffset = node.lineOffset or 0
+			--self.wText.cursorLineOffset = 0	
 			self.wText:setCursorPosition() 			-- we edit end of node 
 			self.wText.finalWidth = node.w			-- get same width when we save node
                         self.wText:select()
@@ -1019,8 +1022,11 @@ function Map:click(x,y)
 			self.wText.x , self.wText.y = (x - zx) * self.mag , (y - zy) * self.mag
 			self.wText.head = '' 
                         self.wText.trail = '' 		
+			--self.wText.lineOffset = 0
+			--self.wText.cursorLineOffset = 0	
 			self.wText.id = uuid()
 			self.wText.finalWidth = DEFAULT_TEXT_W_AT_SCALE_1 	-- by default
+			self.wText:setCursorPosition() 			-- we edit end of node 
 			self.wText:select()
 			editingNode = true
 
@@ -1074,7 +1080,8 @@ function Map:writeNode( file, node )
   if node.hide then return end
   local text = luastrsanitize(node.text)
   if text ~= "" then
-    file:write("{ id=\"" .. node.id .. "\", xOffset=" .. node.xOffset .. ", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
+    --file:write("{ id=\"" .. node.id .. "\", lineOffset=" .. (node.lineOffset or 0) .. ", xOffset=" .. node.xOffset .. ", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
+    file:write("{ id=\"" .. node.id .. "\", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
   end
   end
 

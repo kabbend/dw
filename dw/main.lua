@@ -553,8 +553,11 @@ function love.mousereleased( x, y )
 				map:manageEdge( moveText.id, targetText.id )
 			else
 				-- we are just moving a node within the map	
-  				local zx,zy = -( map.x * 1/map.mag - layout.W / 2), -( map.y * 1/map.mag - layout.H / 2)
-				moveText.x , moveText.y = (x-zx)*map.mag, (y-zy)*map.mag 
+  				--local zx,zy = -( map.x * 1/map.mag - layout.W / 2), -( map.y * 1/map.mag - layout.H / 2)
+				local dx, dy = ( x - arrowStartX ) * map.mag , ( y - arrowStartY ) * map.mag
+				--moveText.x , moveText.y = (x-zx)*map.mag, (y-zy)*map.mag 
+				moveText.x , moveText.y = moveText.x + dx, moveText.y + dy 
+				
 			end
 			-- in both cases, we save the text/edges associated to that Map
 			map:saveText()
