@@ -8,7 +8,8 @@ local utf8		= require 'utf8'
 local codepage		= require 'codepage'		-- windows cp1252 support
 local widget		= require 'widget'
 
-local MAX_TEXT_W_AT_SCALE_1	= 500
+MIN_TEXT_W_AT_SCALE_1		= 100
+DEFAULT_TEXT_W_AT_SCALE_1	= 500
 
 local function uuid()
     local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
@@ -964,6 +965,7 @@ function Map:click(x,y)
 			-- we store and save a node only if not empty ...
 			if text ~= "" then  
           			local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), self.wText.finalWidth )
+				width = math.max(MIN_TEXT_W_AT_SCALE_1,width)
           			local height = (table.getn(wrappedtext)+1)* math.floor(fontSize*1.2+0.5)
 				justSaved = {
                                 	id = self.wText.id, x = math.floor(self.wText.x) , y = math.floor(self.wText.y) , text = self.wText:getText() , 
@@ -1018,7 +1020,7 @@ function Map:click(x,y)
 			self.wText.head = '' 
                         self.wText.trail = '' 		
 			self.wText.id = uuid()
-			self.wText.finalWidth = MAX_TEXT_W_AT_SCALE_1 	-- by default
+			self.wText.finalWidth = DEFAULT_TEXT_W_AT_SCALE_1 	-- by default
 			self.wText:select()
 			editingNode = true
 
@@ -1063,6 +1065,7 @@ end
 function luastrsanitize(str)
 	str=str:gsub('\\','\\\\') 
 	str=str:gsub('"','&quot;')  
+	str=str:gsub('\n','\\n')  
 	return str
 end
 

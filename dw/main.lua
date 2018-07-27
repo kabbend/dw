@@ -1,4 +1,7 @@
 
+-- all fonts used by edition mode in Maps
+fonts = {}
+
 local utf8 		= require 'utf8'
 local codepage		= require 'codepage'	-- windows cp1252 support
 local socket 		= require 'socket'	-- general networking
@@ -28,8 +31,6 @@ local Snapshot			= require 'snapshotClass'	-- store and display one image
 local Pawn			= require 'pawn'		-- store and display one pawn to display on map 
 local Atlas			= require 'atlas'		-- store some information on maps (eg. which one is visible) 
 
--- all fonts used by edition mode in Maps
-fonts = {}
 
 layout = mainLayout:new()		-- one instance of the global layout
 atlas = nil 				-- one instance of the atlas. Will be set in init()
@@ -951,7 +952,7 @@ if not w then return end
 if resizeText then
 
 	resizeText.w = resizeText.w + dx * w.mag
-	if resizeText.w <= 100 then resizeText.w = 100 end
+	if resizeText.w <= MIN_TEXT_W_AT_SCALE_1 then resizeText.w = MIN_TEXT_W_AT_SCALE_1 end
 	local width, wrappedtext = fonts[12]:getWrap( resizeText.text , resizeText.w )
         resizeText.h = (table.getn(wrappedtext)+1)*(12+3)
 
@@ -1021,6 +1022,7 @@ end
 function love.keypressed( key, isrepeat )
 
 -- check if a callback is set and must be activated
+if textActiveCallback 		and key == "return" 	then textActiveCallback("\n"); return end
 if textActiveBackspaceCallback 	and key == "backspace" 	then textActiveBackspaceCallback(); return end
 if textActiveLeftCallback 	and key == "left" 	then textActiveLeftCallback(); return end
 if textActiveRightCallback 	and key == "right" 	then textActiveRightCallback(); return end
@@ -1334,6 +1336,12 @@ end
 
 function init() 
 
+    -- load fonts for map text edition
+    for i=2,40 do 			-- load same font with different sizes
+      fonts[i] = love.graphics.newFont("yui/yaoui/fonts/PlayfairDisplay-Regular.otf",i)
+      fonts[i]:setFilter( "nearest", "nearest" )
+    end
+
     -- create basic windows
     local pWindow = projectorWindow:new{ w=layout.W1, h=layout.H1, x=-(layout.WC+layout.intW+3)+layout.W/2,
 					y=-(layout.H - 3*iconSize - layout.snapshotSize - 2*layout.intW - layout.H1 - 2 )+layout.H/2 
@@ -1537,10 +1545,5 @@ function love.load( args )
 
     math.randomseed( os.time() )
 
-    -- load fonts for map text edition
-    for i=2,40 do 			-- load same font with different sizes
-      fonts[i] = love.graphics.newFont("yui/yaoui/fonts/PlayfairDisplay-Regular.otf",i)
-      fonts[i]:setFilter( "nearest", "nearest" )
-    end
     end
 

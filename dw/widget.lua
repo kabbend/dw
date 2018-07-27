@@ -3,6 +3,7 @@ local theme = require 'theme'
 local utf8  = require 'utf8'
 
 local widget = {}
+local fontSize = 12+4
 
 --
 -- buttonWidget class
@@ -84,6 +85,7 @@ function widget.textWidget:new( t )
   new.textSelected = ""
   new.textSelectedPosition = 0
   new.xOffset = 0
+  new.lineOffset = 0
   new.color = theme.color.black
   new.backgroundColor = theme.color.white
   new:setCursorPosition() 
@@ -96,8 +98,11 @@ function widget.textWidget:select()
 
 	textActiveCallback = function(t) 
 		self.head = self.head .. t 
-		if theme.fontRound:getWidth( self.head .. self.trail ) > self.w - theme.fontRound:getWidth(t) then
-			self.xOffset = self.xOffset - theme.fontRound:getWidth(t)
+		if t == "\n" then
+			self.lineOffset = self.lineOffset + 1
+			self.xOffset = 0
+		elseif fonts[12]:getWidth( self.head .. self.trail ) > self.w - fonts[12]:getWidth(t) then
+			self.xOffset = self.xOffset - fonts[12]:getWidth(t)
 		end 
 		self:setCursorPosition() 
 		end 
@@ -110,9 +115,13 @@ function widget.textWidget:select()
 				remove = string.sub(self.head,byteoffset)
 				self.head = string.sub(self.head, 1, byteoffset - 1) 
 			end 
+			if remove == "\n" then
+				self.lineOffset = self.lineOffset - 1
+				self.lineOffset = math.max(0,self.lineOffset)
+			end
 			self:setCursorPosition()
 			if self.cursorPosition + self.xOffset < 0 then
-				self.xOffset = self.xOffset + theme.fontRound:getWidth(remove)
+				self.xOffset = self.xOffset + fonts[12]:getWidth(remove)
 			end
 		end
 		end
@@ -148,7 +157,7 @@ function widget.textWidget:select()
 		end
 		self:setCursorPosition()
 		if self.cursorPosition + self.xOffset < 0 then
-			self.xOffset = self.xOffset + theme.fontRound:getWidth(remove)
+			self.xOffset = self.xOffset + fonts[12]:getWidth(remove)
 		end
 		end 
 
@@ -169,7 +178,7 @@ function widget.textWidget:select()
 		end
 		self:setCursorPosition()
 		if self.cursorPosition + self.xOffset > self.w then
-			self.xOffset = self.xOffset - theme.fontRound:getWidth(remove)
+			self.xOffset = self.xOffset - fonts[12]:getWidth(remove)
 		end
 		end 
 
@@ -189,7 +198,16 @@ function widget.textWidget:unselect()
 	end
 
 function widget.textWidget:setCursorPosition()
-  self.cursorPosition = theme.fontRound:getWidth( self.head ) 
+  -- get the last carriage return, or the beginning of head
+  local rewind = "" 
+  local i = string.len(self.head)
+  while i > 1 do
+  	rewind = string.sub(self.head,i,i)
+	if rewind == "\n" then break end
+	i = i - 1
+  end
+  local s = string.sub(self.head,i,string.len(self.head))
+  self.cursorPosition = fonts[12]:getWidth( s ) 
   end
 
 function widget.textWidget:getText() return self.head .. self.trail end
@@ -204,18 +222,18 @@ function widget.textWidget:draw()
   if self.parent then mag = self.parent.mag end
   if self.selected then
     love.graphics.setColor(0,0,0)
-    love.graphics.rectangle("line",x/mag+zx,y/mag+zy,self.w,self.h, 5, 5)
+    love.graphics.rectangle("line",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
     love.graphics.setColor(unpack(self.backgroundColor))
-    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy,self.w,self.h, 5, 5)
+    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
     love.graphics.setColor(0,0,0)
     if self.cursorDraw then 
 	love.graphics.line(self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy, self.cursorPosition + x/mag + zx + self.xOffset, y/mag+zy+self.h) 
     end
   end
   love.graphics.setColor(unpack(self.color))
-  love.graphics.setFont( theme.fontRound )
-  love.graphics.setScissor(x/mag+zx,y/mag+zy,self.w,self.h)
-  love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy))
+  love.graphics.setFont( fonts[12] )
+  love.graphics.setScissor(x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize)
+  love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy-self.lineOffset*fontSize))
   if self.textSelected ~= "" then
     love.graphics.setColor(155,155,155,155)
     local w = self.cursorPosition - self.textSelectedPosition
