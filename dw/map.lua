@@ -8,8 +8,11 @@ local utf8		= require 'utf8'
 local codepage		= require 'codepage'		-- windows cp1252 support
 local widget		= require 'widget'
 
-MIN_TEXT_W_AT_SCALE_1		= 100
+MIN_TEXT_W_AT_SCALE_1		= 50
 DEFAULT_TEXT_W_AT_SCALE_1	= 500
+DEFAULT_FONT_SIZE		= 12
+MIN_FONT_SIZE			= 2
+MAX_FONT_SIZE			= 80
 
 local function uuid()
     local template ='xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
@@ -153,7 +156,7 @@ function Map:load( t ) -- create from filename or file object (one mandatory). k
 
   -- map edition 
   self.isEditing = false 
-  self.wText = widget.textWidget:new{ x = 0, y = 0 , w = 500, text = "" }
+  self.wText = widget.textWidget:new{ x = 0, y = 0 , w = 500, text = "" , fontSize = DEFAULT_FONT_SIZE }
   Window.addWidget(self,self.wText)
   self.nodes = {}  -- id , x , y , text , w , h , color, backgroundColor, xOffset
   self.edges = {}  -- id1, id2  
@@ -435,8 +438,6 @@ function Map:draw()
      -- print texts
      if self.isEditing then
 
-  	local fontSize = math.floor((12 / MAG)+0.5)
-  	if fontSize >= 2 and fontSize <= 40 then  -- don't print if too small or too big...
 	love.graphics.setLineWidth( 2 )
 
        		-- draw edges first     
@@ -513,23 +514,30 @@ function Map:draw()
 				nx, ny = nx / MAG , ny / MAG
 				width, height = width / MAG, height / MAG
 				if x + nx + width > 0 and x + nx < self.w and y + ny + height > 0 and y + ny < self.h then 
+					local font = nil
+					if self.nodes[j].bold then
+						font = fontsBold
+					else
+						font = fonts
+					end
     	  				love.graphics.setColor(0,0,0)
     	  				love.graphics.rectangle("line",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
     	  				love.graphics.setColor(unpack(self.nodes[j].backgroundColor))
     	  				love.graphics.rectangle("fill",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
     	  				love.graphics.setColor(0,0,0)
     	  				love.graphics.line(x+nx+width-3,y+ny,x+nx+width-3,y+ny+height)	
-    	  				love.graphics.setColor(unpack(self.nodes[j].color))
-	  				love.graphics.setFont( fonts[fontSize] )
-	  				love.graphics.printf( self.nodes[j].text, math.floor(x+nx), math.floor(y+ny), math.floor(width) , "left" )
+  					local fontSize = math.floor(((self.nodes[j].fontSize or DEFAULT_FONT_SIZE ) / MAG)+0.5)
+  					if fontSize >= MIN_FONT_SIZE and fontSize <= MAX_FONT_SIZE then  -- don't print if too small or too big...
+    	  				  love.graphics.setColor(unpack(self.nodes[j].color))
+	  				  love.graphics.setFont( font[fontSize] )
+	  				  love.graphics.printf( self.nodes[j].text, math.floor(x+nx), math.floor(y+ny), math.floor(width) , "left" )
+					end
 	  			end
 			end
      		end -- loop nodes
 
 		-- now all nodes are drawn, reset them for next cycle
      		for j=1,#self.nodes do self.nodes[j].done = false end
-	
-	end -- fontSize
 	
 	love.graphics.setLineWidth( 1 )
 
@@ -957,19 +965,25 @@ function Map:click(x,y)
 
 			-- we were typing within a node and now we click somewhere else. This saves the Node
 			local MAG = self.mag
-			local fontSize = 12 -- 12 is base font size at scale 1
+			local fontSize = self.wText.fontSize  
 			local text = self.wText:getText()
 			-- if the node already exists, we remove it first
 			local n, index = self:findNodeById(self.wText.id) 
 			if n then table.remove( self.nodes, index) end
 			-- we store and save a node only if not empty ...
-			if text ~= "" then  
-          			local width, wrappedtext = fonts[fontSize]:getWrap( self.wText:getText(), self.wText.finalWidth )
+			if text ~= "" then 
+				local font = nil
+				if self.wText.bold then
+					font = fontsBold
+				else
+					font = fonts
+				end 
+          			local width, wrappedtext = font[fontSize]:getWrap( self.wText:getText(), self.wText.finalWidth )
 				width = math.max(MIN_TEXT_W_AT_SCALE_1,width)
           			local height = (table.getn(wrappedtext)+1)* math.floor(fontSize*1.2+0.5)
 				justSaved = {
                                 	id = self.wText.id, x = math.floor(self.wText.x) , y = math.floor(self.wText.y) , text = self.wText:getText() , 
-					w = math.floor(width), h = math.floor(height), 
+					w = math.floor(width), h = math.floor(height), bold = self.wText.bold, fontSize = self.wText.fontSize
 					--xOffset = math.floor(self.wText.xOffset), lineOffset = self.wText.lineOffset
                                 	}
 				table.insert( self.nodes , justSaved )
@@ -1006,6 +1020,9 @@ function Map:click(x,y)
 			self.wText.id = node.id 
 			self.wText.x , self.wText.y = node.x , node.y 	-- move the input zone to the existing node
                         self.wText.head = node.text 			-- and with the same text
+			self.wText.bold = node.bold
+			self.wText.fontSize = node.fontSize or DEFAULT_FONT_SIZE
+			self.wText.fontHeight = self.wText:getFont():getHeight()
                         self.wText.trail = '' 				-- and with the same text
 			--self.wText.xOffset = node.xOffset or 0		-- and same text and cursor position
 			--self.wText.lineOffset = node.lineOffset or 0
@@ -1021,6 +1038,9 @@ function Map:click(x,y)
 		elseif love.keyboard.isDown("lctrl") then
 			-- we edit a new node
 			self.wText.x , self.wText.y = (x - zx) * self.mag , (y - zy) * self.mag
+			self.wText.bold = false
+			self.wText.fontSize = DEFAULT_FONT_SIZE
+			self.wText.fontHeight = self.wText:getFont():getHeight()
 			self.wText.head = '' 
                         self.wText.trail = '' 		
 			--self.wText.lineOffset = 0
@@ -1081,8 +1101,12 @@ function Map:writeNode( file, node )
   if node.hide then return end
   local text = luastrsanitize(node.text)
   if text ~= "" then
+	local bold = "false"
+	if node.bold then bold = "true" end	
     --file:write("{ id=\"" .. node.id .. "\", lineOffset=" .. (node.lineOffset or 0) .. ", xOffset=" .. node.xOffset .. ", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
-    file:write("{ id=\"" .. node.id .. "\", text=\"" .. text .. "\", x=" .. node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
+    file:write("{ id=\"" .. node.id .. "\", fontSize=" .. (node.fontSize or DEFAULT_FONT_SIZE) .. 
+			", bold=" .. bold .. ", text=\"" .. text ..  "\", x=" .. 
+			node.x .. ", y=" .. node.y .. ", w=" .. node.w .. ", h=" .. node.h .. " },\n")
   end
   end
 

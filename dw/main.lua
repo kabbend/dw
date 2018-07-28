@@ -1,6 +1,7 @@
 
 -- all fonts used by edition mode in Maps
 fonts = {}
+fontsBold = {}
 
 local utf8 		= require 'utf8'
 local codepage		= require 'codepage'	-- windows cp1252 support
@@ -954,10 +955,16 @@ if not w then return end
 
 if resizeText then
 
+	local font = nil
+	if resizeText.bold then
+		font = fontsBold[ resizeText.fontSize ]
+	else
+		font = fonts[ resizeText.fontSize ]
+	end
 	resizeText.w = resizeText.w + dx * w.mag
 	if resizeText.w <= MIN_TEXT_W_AT_SCALE_1 then resizeText.w = MIN_TEXT_W_AT_SCALE_1 end
-	local width, wrappedtext = fonts[12]:getWrap( resizeText.text , resizeText.w )
-        resizeText.h = (table.getn(wrappedtext)+1)*(12+3)
+	local width, wrappedtext = font:getWrap( resizeText.text , resizeText.w )
+        resizeText.h = (table.getn(wrappedtext))*(font:getHeight())
 
 elseif mouseResize then
 
@@ -1064,11 +1071,6 @@ if key == "f" and love.keyboard.isDown("lctrl") then
   layout:toggleWindow( layout.dataWindow )
   return
 end
-if key == "b" and love.keyboard.isDown("lctrl") then 
-  layout:setDisplay( layout.snapshotWindow, true )
-  layout:setFocus( layout.snapshotWindow )
-  return
-end
 if key == "p" and love.keyboard.isDown("lctrl") then 
   layout:setDisplay( layout.pWindow, true )
   layout:setFocus( layout.pWindow )
@@ -1131,6 +1133,21 @@ if window then
 	-- 'lctrl + z' : zoom in / out
 	-- 'lctrl + s' : stick map
 	-- 'lctrl + u' : unstick map
+
+  	if key == "b" and love.keyboard.isDown("lctrl") and map.wText.selected then
+		map.wText.bold = not map.wText.bold
+		return
+  	end
+
+  	if key == "a" and love.keyboard.isDown("lctrl") and map.wText.selected then
+		map.wText:decFont()
+		return
+  	end
+
+  	if key == "z" and love.keyboard.isDown("lctrl") and map.wText.selected then
+		map.wText:incFont()
+		return
+  	end
 
   	if key == "s" and love.keyboard.isDown("lctrl") then
 		map:sticky()
@@ -1340,9 +1357,14 @@ end
 function init() 
 
     -- load fonts for map text edition
-    for i=2,40 do 			-- load same font with different sizes
+    for i=MIN_FONT_SIZE,MAX_FONT_SIZE do 		-- load same font with different sizes
       fonts[i] = love.graphics.newFont("yui/yaoui/fonts/PlayfairDisplay-Regular.otf",i)
       fonts[i]:setFilter( "nearest", "nearest" )
+    end
+
+    for i=MIN_FONT_SIZE,MAX_FONT_SIZE do 		-- load same font with different sizes
+      fontsBold[i] = love.graphics.newFont("yui/yaoui/fonts/PlayfairDisplay-Bold.otf",i)
+      fontsBold[i]:setFilter( "nearest", "nearest" )
     end
 
     -- create basic windows

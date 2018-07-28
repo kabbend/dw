@@ -3,7 +3,6 @@ local theme = require 'theme'
 local utf8  = require 'utf8'
 
 local widget = {}
-local fontSize = 12+4
 
 --
 -- buttonWidget class
@@ -75,6 +74,9 @@ function widget.textWidget:new( t )
   local new = t or {}
   setmetatable( new , self )
   self.__index = self
+  new.bold = false
+  new.fontSize = t.fontSize or DEFAULT_FONT_SIZE 
+  new.fontHeight = math.floor(self:getFont(new.fontSize):getHeight())
   new.cursorTimer = 0
   new.cursorTimerLimit = 0.5
   new.cursorPosition = 0
@@ -105,6 +107,9 @@ function widget.textWidget:select(y,x,w)
 		if string.sub(s,i,i) == '\n' then self.lineOffset = self.lineOffset + 1 end
 	end
 
+	-- determine minimum height depending on font size
+	self:updateBaseHeight()
+
 	if not y then
 	
 		-- DEFAULT, we select the last line
@@ -115,7 +120,7 @@ function widget.textWidget:select(y,x,w)
 
 		-- retrieve text xOffset based on last line 
 		local ll = self:lastLine()
-		local llsize = fonts[12]:getWidth(ll)
+		local llsize = self:getFont():getWidth(ll)
 		if llsize > self.w then
 			self.xOffset = self.w - llsize -- negative offset  
 		else
@@ -139,10 +144,10 @@ function widget.textWidget:select(y,x,w)
 		local remaining = t
 		local justFound, found = false, false
 		local result = nil
-		local height = fonts[12]:getHeight("A")
+		local height = self:getFont():getHeight()
 		local currentLine, resultLine = "", nil 
 		while i <= len do
-			if currenty <= y and currenty + height > y and currentx <= x and currentx + 12 > x then 
+			if currenty <= y and currenty + height > y and currentx <= x and currentx + self.fontSize > x then 
 				justFound = true; found = true; result = line end -- we continue until end of this line, to get its length 
 			local byteoffset = utf8.offset(remaining,2)
                 	if byteoffset then
@@ -159,10 +164,10 @@ function widget.textWidget:select(y,x,w)
 				currentx = 0
 			else
 				currentLine = currentLine .. c -- do not add \n to currentLine
-				currentx = currentx + fonts[12]:getWidth(c) 
+				currentx = currentx + self:getFont():getWidth(c) 
 				if currentx > w then
 					currenty = currenty + height 
-					currentx = fonts[12]:getWidth(c) 
+					currentx = self:getFont():getWidth(c) 
 				end
 			end
 			if justFound then
@@ -184,7 +189,7 @@ function widget.textWidget:select(y,x,w)
 		io.write("=> trail : '" .. self.trail .. "'\n")
 
 		self.cursorLineOffset = -(result - 1)  		-- minus 1 because offset starts at 0, not 1
-		local currentLineW = fonts[12]:getWidth( resultLine )
+		local currentLineW = self:getFont():getWidth( resultLine )
 		if currentLineW > self.w then
 			self.xOffset = self.w - currentLineW
 		else
@@ -201,8 +206,8 @@ function widget.textWidget:select(y,x,w)
 			self.cursorLineOffset = self.cursorLineOffset - 1
 			self.xOffset = 0
 		--elseif fonts[12]:getWidth( self.head .. self.trail ) > self.w - fonts[12]:getWidth(t) then
-		elseif fonts[12]:getWidth( self:lastLine() .. t ) > self.w then
-			self.xOffset = self.xOffset - fonts[12]:getWidth(t)
+		elseif self:getFont():getWidth( self:lastLine() .. t ) > self.w then
+			self.xOffset = self.xOffset - self:getFont():getWidth(t)
 		end 
 		self:setCursorPosition() 
 		end 
@@ -222,7 +227,7 @@ function widget.textWidget:select(y,x,w)
 			end
 			self:setCursorPosition()
 			if self.cursorPosition + self.xOffset < 0 then
-				self.xOffset = self.xOffset + fonts[12]:getWidth(remove)
+				self.xOffset = self.xOffset + self:getFont():getWidth(remove)
 			elseif self.cursorPosition + self.xOffset > self.w then
                         	self.xOffset = self.w - self.cursorPosition
                 	end
@@ -263,7 +268,7 @@ function widget.textWidget:select(y,x,w)
 		end
 		self:setCursorPosition()
 		if self.cursorPosition + self.xOffset < 0 then
-			self.xOffset = self.xOffset + fonts[12]:getWidth(remove)
+			self.xOffset = self.xOffset + self:getFont():getWidth(remove)
 		elseif self.cursorPosition + self.xOffset > self.w then
 			self.xOffset = self.w - self.cursorPosition 
 		end
@@ -289,7 +294,7 @@ function widget.textWidget:select(y,x,w)
 		end
 		self:setCursorPosition()
 		if self.cursorPosition + self.xOffset > self.w then
-			self.xOffset = self.xOffset - fonts[12]:getWidth(remove)
+			self.xOffset = self.xOffset - self:getFont():getWidth(remove)
 		elseif self.cursorPosition + self.xOffset < 0 then
 			self.xOffset = 0 
 		end
@@ -326,7 +331,7 @@ function widget.textWidget:lastLine()
 
 function widget.textWidget:setCursorPosition()
   local s = self:lastLine()
-  self.cursorPosition = fonts[12]:getWidth( s ) 
+  self.cursorPosition = self:getFont():getWidth( s ) 
   end
 
 function widget.textWidget:getText() return self.head .. self.trail end
@@ -342,25 +347,25 @@ function widget.textWidget:draw()
   if self.selected then
     love.graphics.setColor(0,0,0)
     --love.graphics.rectangle("line",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
-    love.graphics.rectangle("line",x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*fontSize, 5, 5)
+    love.graphics.rectangle("line",x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*self.fontHeight, 5, 5)
     love.graphics.setColor(unpack(self.backgroundColor))
     --love.graphics.rectangle("fill",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
-    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*fontSize, 5, 5)
+    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*self.fontHeight, 5, 5)
     love.graphics.setColor(0,0,0)
     if self.cursorDraw then 
 	love.graphics.line(	self.cursorPosition + x/mag + zx + self.xOffset, 
 				--y/mag+zy+self.cursorLineOffset*fontSize, 
-				y/mag+zy-self.cursorLineOffset*fontSize, 
+				y/mag+zy-self.cursorLineOffset*self.fontHeight, 
 				self.cursorPosition + x/mag + zx + self.xOffset, 
 				--y/mag+zy+self.cursorLineOffset*fontSize+self.h
-				y/mag+zy+self.h-self.cursorLineOffset*fontSize
+				y/mag+zy+self.h-self.cursorLineOffset*self.fontHeight
 			  ) 
     end
   end
   love.graphics.setColor(unpack(self.color))
-  love.graphics.setFont( fonts[12] )
+  love.graphics.setFont( self:getFont() )
   --love.graphics.setScissor(x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize)
-  love.graphics.setScissor(x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*fontSize)
+  love.graphics.setScissor(x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*self.fontHeight)
   --love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy-self.lineOffset*fontSize))
   love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy))
   if self.textSelected ~= "" then
@@ -368,9 +373,9 @@ function widget.textWidget:draw()
     --local w = self.cursorPosition - self.textSelectedPosition
     --love.graphics.rectangle("fill",x/mag+zx+self.textSelectedPosition+self.xOffset,y/mag+zy,w,self.h)
     love.graphics.line(		self.textSelectedPosition + x/mag + zx + self.xOffset, 
-				y/mag+zy-self.textSelectedCursorLineOffset*fontSize, 
+				y/mag+zy-self.textSelectedCursorLineOffset*self.fontHeight, 
 				self.textSelectedPosition + x/mag + zx + self.xOffset, 
-				y/mag+zy+self.h-self.textSelectedCursorLineOffset*fontSize
+				y/mag+zy+self.h-self.textSelectedCursorLineOffset*self.fontHeight
 			  ) 
   end
   love.graphics.setScissor()
@@ -392,6 +397,35 @@ function widget.textWidget:isInside(x,y)
 	return true
   end 
   return false
+  end
+
+function widget.textWidget:getFont(i)
+  i = i or self.fontSize 
+  if self.bold then
+  	return fontsBold[i]
+  else
+	return fonts[i]
+  end
+  end
+
+function widget.textWidget:incFont()
+  if self.fontSize < MAX_FONT_SIZE then 
+	self.fontSize = self.fontSize + 1 
+	self.fontHeight = self:getFont():getHeight()
+	self:updateBaseHeight()
+  end
+  end
+
+function widget.textWidget:decFont()
+  if self.fontSize > MIN_FONT_SIZE then 
+	self.fontSize = self.fontSize - 1 
+	self.fontHeight = self:getFont():getHeight()
+	self:updateBaseHeight()
+  end
+  end
+
+function widget.textWidget:updateBaseHeight()
+  self.h = self:getFont():getHeight()
   end
 
 return widget
