@@ -1012,7 +1012,8 @@ function Map:click(x,y)
 			--self.wText.cursorLineOffset = 0	
 			self.wText:setCursorPosition() 			-- we edit end of node 
 			self.wText.finalWidth = node.w			-- get same width when we save node
-                        self.wText:select()
+                        self.wText:select(  (y - zy)  * self.mag - node.y , node.w  )
+                        --self.wText:select()
 			-- don't display the existing node, we will replace it eventually
 			node.hide = true
 			editingNode = true

@@ -84,6 +84,7 @@ function widget.textWidget:new( t )
   new.trail = ""
   new.textSelected = ""
   new.textSelectedPosition = 0
+  new.textSelectedCursorLineOffset = 0
   new.xOffset = 0		-- if the line is too long, we shift print on the left (negative offset) so we always sees the end
   new.cursorLineOffset = 0	-- vertical position of the cursor: 0 if we are on last line (the default), negative otherwise. It's a number of lines, not pixels
   new.lineOffset = 0		-- number of lines, used as an offset to display rectangle
@@ -93,23 +94,10 @@ function widget.textWidget:new( t )
   return new
   end
 
-function widget.textWidget:select() 
+function widget.textWidget:select(y,w) 
 
 	self.selected = true; 
 	self.cursorTimer = 0
-
-	-- in this version we always select the end of the text
-	-- hence no cursor line offset (last line), xOffset based on last line length
-	self.cursorLineOffset = 0
-
-	-- retrieve text xOffset based on last line 
-	local ll = self:lastLine()
-	local llsize = fonts[12]:getWidth(ll)
-	if llsize > self.w then
-		self.xOffset = self.w - llsize -- negative offset  
-	else
-		self.xOffset = 0
-	end
 
 	-- retrieve lineOffset based on number of lines
 	local s = self.head .. self.trail
@@ -117,10 +105,99 @@ function widget.textWidget:select()
 		if string.sub(s,i,i) == '\n' then self.lineOffset = self.lineOffset + 1 end
 	end
 
+	if not y then
+	
+		-- DEFAULT, we select the last line
+
+		-- in this version we always select the end of the text
+		-- hence no cursor line offset (last line), xOffset based on last line length
+		self.cursorLineOffset = 0
+
+		-- retrieve text xOffset based on last line 
+		local ll = self:lastLine()
+		local llsize = fonts[12]:getWidth(ll)
+		if llsize > self.w then
+			self.xOffset = self.w - llsize -- negative offset  
+		else
+			self.xOffset = 0
+		end
+
+
+	else
+	
+		-- We select a particular line
+		-- y is the y-coordinate in the widget at scale 1, w the width (at scale 1) of the text zone we just selected
+	
+		io.write("select called with " .. y .. " " .. w .. "\n")	
+
+		local t = self.head .. self.trail
+		self.head = ""
+		self.trail = ""
+		local line, currenty, currentx = 1, 0, 0
+		local i = 1
+		local len = string.len(t)
+		local remaining = t
+		local justFound, found = false, false
+		local result = nil
+		local height = fonts[12]:getHeight("A")
+		local currentLine, resultLine = "", nil 
+		while i <= len do
+			if currenty <= y and currenty + height > y then justFound = true; found = true; result = line end -- we continue until end of this line, to get its length 
+			local byteoffset = utf8.offset(remaining,2)
+                	if byteoffset then
+                        	c = string.sub(remaining,1,byteoffset-1)
+				remaining = string.sub(remaining,1+byteoffset-1)
+			else
+				c = string.sub(remaining,i,i)
+				remaining = string.sub(remaining,2)
+                	end
+			if c == "\n" then
+				if justFound then justFound = false; resultLine = currentLine end
+				line = line + 1
+				currentLine = ""
+				currenty = currenty + height 
+				currentx = 0
+			else
+				currentLine = currentLine .. c -- do not add \n to currentLine
+				currentx = currentx + fonts[12]:getWidth(c) 
+				if currentx > w then
+					currenty = currenty + height 
+					currentx = fonts[12]:getWidth(c) 
+				end
+			end
+			if justFound then
+				self.head = self.head .. c
+			elseif found then 
+				self.trail = self.trail .. c
+			else -- not found
+				self.head = self.head .. c
+			end
+			i = i + 1 
+		end	
+		if not result then result = line end
+		if not resultLine then resultLine = currentLine end
+
+		io.write("=> select : line " .. result .. " \n")	
+		io.write("=> selected text : '" .. resultLine .. "'\n")
+		io.write("=> head : '" .. self.head .. "'\n")
+		io.write("=> trail : '" .. self.trail .. "'\n")
+
+		self.cursorLineOffset = -(result - 1)  		-- minus 1 because offset starts at 0, not 1
+		local currentLineW = fonts[12]:getWidth( resultLine )
+		if currentLineW > self.w then
+			self.xOffset = self.w - currentLineW
+		else
+			self.xOffset = 0 
+		end
+		self:setCursorPosition()
+
+	end
+
 	textActiveCallback = function(t) 
 		self.head = self.head .. t 
 		if t == "\n" then
 			self.lineOffset = self.lineOffset + 1
+			self.cursorLineOffset = self.cursorLineOffset - 1
 			self.xOffset = 0
 		--elseif fonts[12]:getWidth( self.head .. self.trail ) > self.w - fonts[12]:getWidth(t) then
 		elseif fonts[12]:getWidth( self:lastLine() .. t ) > self.w then
@@ -140,6 +217,7 @@ function widget.textWidget:select()
 			if remove == "\n" then
 				self.lineOffset = self.lineOffset - 1
 				self.lineOffset = math.max(0,self.lineOffset)
+				self.cursorLineOffset = self.cursorLineOffset + 1
 			end
 			self:setCursorPosition()
 			if self.cursorPosition + self.xOffset < 0 then
@@ -152,7 +230,7 @@ function widget.textWidget:select()
 
 	textActiveCopyCallback = function() 
 		love.system.setClipboardText(self.textSelected)
-		self.textSelected = ""; self.textSelectedPosition = 0
+		self.textSelected = ""; self.textSelectedPosition = 0; self.textSelectedCursorLineOffset = 0
 		end
 
 	textActivePasteCallback = function() 
@@ -173,14 +251,14 @@ function widget.textWidget:select()
 			self.head = string.sub(self.head, 1, byteoffset - 1) 
 		end 
 		if remove == "\n" then
-			self.cursorLineOffset = self.cursorLineOffset - 1
+			self.cursorLineOffset = self.cursorLineOffset + 1
 		end
 		self.trail = remove .. self.trail
 		if love.keyboard.isDown("lshift") then
-			if self.textSelected == "" then self.textSelectedPosition = self.cursorPosition end
+			if self.textSelected == "" then self.textSelectedPosition = self.cursorPosition ; self.textSelectedCursorLineOffset = self.cursorLineOffset end
 			self.textSelected = remove .. self.textSelected
 		else
-			self.textSelected = "" ; self.textSelectedPosition = 0
+			self.textSelected = "" ; self.textSelectedPosition = 0 ; self.textSelectedCursorLineOffset = 0
 		end
 		self:setCursorPosition()
 		if self.cursorPosition + self.xOffset < 0 then
@@ -199,18 +277,20 @@ function widget.textWidget:select()
 			self.trail = string.sub(self.trail, byteoffset) 
 		end 
 		if remove == "\n" then
-			self.cursorLineOffset = self.cursorLineOffset + 1
+			self.cursorLineOffset = self.cursorLineOffset - 1
 		end
 		self.head = self.head .. remove 
 		if love.keyboard.isDown("lshift") then
-			if self.textSelected == "" then self.textSelectedPosition = self.cursorPosition end
+			if self.textSelected == "" then self.textSelectedPosition = self.cursorPosition ; self.textSelectedCursorLineOffset = self.cursorLineOffset end
 			self.textSelected = self.textSelected .. remove
 		else
-			self.textSelected = "" ; self.textSelectedPosition = 0
+			self.textSelected = "" ; self.textSelectedPosition = 0 ; self.textSelectedCursorLineOffset = 0
 		end
 		self:setCursorPosition()
 		if self.cursorPosition + self.xOffset > self.w then
 			self.xOffset = self.xOffset - fonts[12]:getWidth(remove)
+		elseif self.cursorPosition + self.xOffset < 0 then
+			self.xOffset = 0 
 		end
 		end 
 
@@ -260,26 +340,37 @@ function widget.textWidget:draw()
   if self.parent then mag = self.parent.mag end
   if self.selected then
     love.graphics.setColor(0,0,0)
-    love.graphics.rectangle("line",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
+    --love.graphics.rectangle("line",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
+    love.graphics.rectangle("line",x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*fontSize, 5, 5)
     love.graphics.setColor(unpack(self.backgroundColor))
-    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
+    --love.graphics.rectangle("fill",x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize, 5, 5)
+    love.graphics.rectangle("fill",x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*fontSize, 5, 5)
     love.graphics.setColor(0,0,0)
     if self.cursorDraw then 
 	love.graphics.line(	self.cursorPosition + x/mag + zx + self.xOffset, 
-				y/mag+zy+self.cursorLineOffset*fontSize, 
+				--y/mag+zy+self.cursorLineOffset*fontSize, 
+				y/mag+zy-self.cursorLineOffset*fontSize, 
 				self.cursorPosition + x/mag + zx + self.xOffset, 
-				y/mag+zy+self.cursorLineOffset*fontSize+self.h
+				--y/mag+zy+self.cursorLineOffset*fontSize+self.h
+				y/mag+zy+self.h-self.cursorLineOffset*fontSize
 			  ) 
     end
   end
   love.graphics.setColor(unpack(self.color))
   love.graphics.setFont( fonts[12] )
-  love.graphics.setScissor(x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize)
-  love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy-self.lineOffset*fontSize))
+  --love.graphics.setScissor(x/mag+zx,y/mag+zy-self.lineOffset*fontSize,self.w,self.h+self.lineOffset*fontSize)
+  love.graphics.setScissor(x/mag+zx,y/mag+zy,self.w,self.h+self.lineOffset*fontSize)
+  --love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy-self.lineOffset*fontSize))
+  love.graphics.print(self.head..self.trail,math.floor(x/mag+zx+self.xOffset),math.floor(y/mag+zy))
   if self.textSelected ~= "" then
-    love.graphics.setColor(155,155,155,155)
-    local w = self.cursorPosition - self.textSelectedPosition
-    love.graphics.rectangle("fill",x/mag+zx+self.textSelectedPosition+self.xOffset,y/mag+zy,w,self.h)
+    love.graphics.setColor(theme.color.red)
+    --local w = self.cursorPosition - self.textSelectedPosition
+    --love.graphics.rectangle("fill",x/mag+zx+self.textSelectedPosition+self.xOffset,y/mag+zy,w,self.h)
+    love.graphics.line(		self.textSelectedPosition + x/mag + zx + self.xOffset, 
+				y/mag+zy-self.textSelectedCursorLineOffset*fontSize, 
+				self.textSelectedPosition + x/mag + zx + self.xOffset, 
+				y/mag+zy+self.h-self.textSelectedCursorLineOffset*fontSize
+			  ) 
   end
   love.graphics.setScissor()
   end
