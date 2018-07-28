@@ -94,7 +94,7 @@ function widget.textWidget:new( t )
   return new
   end
 
-function widget.textWidget:select(y,w) 
+function widget.textWidget:select(y,x,w) 
 
 	self.selected = true; 
 	self.cursorTimer = 0
@@ -128,7 +128,7 @@ function widget.textWidget:select(y,w)
 		-- We select a particular line
 		-- y is the y-coordinate in the widget at scale 1, w the width (at scale 1) of the text zone we just selected
 	
-		io.write("select called with " .. y .. " " .. w .. "\n")	
+		io.write("select called with " .. y .. " " .. x .. " " .. w .. "\n")	
 
 		local t = self.head .. self.trail
 		self.head = ""
@@ -142,7 +142,8 @@ function widget.textWidget:select(y,w)
 		local height = fonts[12]:getHeight("A")
 		local currentLine, resultLine = "", nil 
 		while i <= len do
-			if currenty <= y and currenty + height > y then justFound = true; found = true; result = line end -- we continue until end of this line, to get its length 
+			if currenty <= y and currenty + height > y and currentx <= x and currentx + 12 > x then 
+				justFound = true; found = true; result = line end -- we continue until end of this line, to get its length 
 			local byteoffset = utf8.offset(remaining,2)
                 	if byteoffset then
                         	c = string.sub(remaining,1,byteoffset-1)
@@ -152,7 +153,6 @@ function widget.textWidget:select(y,w)
 				remaining = string.sub(remaining,2)
                 	end
 			if c == "\n" then
-				if justFound then justFound = false; resultLine = currentLine end
 				line = line + 1
 				currentLine = ""
 				currenty = currenty + height 
@@ -167,6 +167,7 @@ function widget.textWidget:select(y,w)
 			end
 			if justFound then
 				self.head = self.head .. c
+				justFound = false; resultLine = currentLine
 			elseif found then 
 				self.trail = self.trail .. c
 			else -- not found

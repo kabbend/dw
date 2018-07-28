@@ -512,7 +512,7 @@ function Map:draw()
 				local width, height = self.nodes[j].w, self.nodes[j].h
 				nx, ny = nx / MAG , ny / MAG
 				width, height = width / MAG, height / MAG
-				if x + nx + width > 0 and x + nx < self.w and y + ny > 0 and y + ny < self.h then 
+				if x + nx + width > 0 and x + nx < self.w and y + ny + height > 0 and y + ny < self.h then 
     	  				love.graphics.setColor(0,0,0)
     	  				love.graphics.rectangle("line",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
     	  				love.graphics.setColor(unpack(self.nodes[j].backgroundColor))
@@ -1012,7 +1012,7 @@ function Map:click(x,y)
 			--self.wText.cursorLineOffset = 0	
 			self.wText:setCursorPosition() 			-- we edit end of node 
 			self.wText.finalWidth = node.w			-- get same width when we save node
-                        self.wText:select(  (y - zy)  * self.mag - node.y , node.w  )
+                        self.wText:select(  (y - zy)  * self.mag - node.y , (x - zx) * self.mag - node.x , node.w  )
                         --self.wText:select()
 			-- don't display the existing node, we will replace it eventually
 			node.hide = true
