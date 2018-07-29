@@ -413,6 +413,7 @@ function widget.textWidget:incFont()
 	self.fontSize = self.fontSize + 1 
 	self.fontHeight = self:getFont():getHeight()
 	self:updateBaseHeight()
+	self:setCursorPosition()
   end
   end
 
@@ -421,6 +422,7 @@ function widget.textWidget:decFont()
 	self.fontSize = self.fontSize - 1 
 	self.fontHeight = self:getFont():getHeight()
 	self:updateBaseHeight()
+	self:setCursorPosition()
   end
   end
 

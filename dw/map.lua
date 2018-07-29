@@ -329,6 +329,11 @@ function Map:drop( o )
 		  if p then 
 			p.x, p.y = px + self.translateQuadX ,py + self.translateQuadY 
 		  	io.write("map drop 2: creating pawn " .. id .. "\n")
+			p.inEditionMode = self.isEditing
+			if p.inEditionMode then 
+				self.layout.notificationWindow:addMessage("Edition mode: This Pawn will be saved with the Map.")
+				self:textChanged()
+			end
 			end
 
 		  -- send it to projector
@@ -998,7 +1003,8 @@ function Map:click(x,y)
 			-- don't edit text zone anymore
 			self.wText:unselect()		
 			-- save file
-			self:saveText()
+			self:textChanged()
+			--self:saveText()
 
 		end
 
@@ -1111,7 +1117,7 @@ function Map:writeNode( file, node )
   end
 
 function Map:saveText()
-  local savefile = "save.lua"
+  local savefile = "save.lua" -- default filename
   if self.scenariofile then
 	savefile = self.scenariofile
   elseif self.filename then 
@@ -1120,15 +1126,31 @@ function Map:saveText()
   local file = io.open(savefile,"w")
   if not file then return end
   file:write("return {\n")
+	-- save all text nodes
   for i=1,#self.nodes do
 	self:writeNode( file, self.nodes[i] )
   end
   file:write("},{\n")
+	-- save all edges 
   for i=1,#self.edges do
   	file:write("{ id1=\"" .. self.edges[i].id1 .. "\", id2=\"" .. self.edges[i].id2 .. "\" },\n")
   end
-  file:write("}\n")
+  file:write("},{\n")
+	-- save pawns if we have
+  file:write(" " .. (self.basePawnSize or "nil" ) ..", {" )
+  for i=1,#self.pawns do
+	if self.pawns[i].inEditionMode then
+  	  local index = findPNJ(self.pawns[i].id)
+	  local pnj = PNJTable[index]
+	  if pnj and not pnj.dead then
+	    file:write("{ class=\"" .. pnj.class .. "\", x=" .. math.floor(self.pawns[i].x) .. ", y=" .. math.floor(self.pawns[i].y) .. " },\n")
+	  end
+	end
+  end
+  file:write("}}\n")
   io.close(file)
+  self.changed = false 
+  self.buttons = { 'unquad', 'scotch', 'eye', 'fog', 'fullsize', 'kill', 'wipe', 'round', 'edit', 'always', 'close' } 
   end
 
 -- find an edge (and its index) given one node only
@@ -1170,6 +1192,13 @@ function Map:findNodeById(id)
     if self.nodes[i].id == id then return self.nodes[i], i end 
   end
   return nil, 0
+  end
+
+function Map:textChanged()
+  if not self.changed then
+  	self.changed = true
+  	self.buttons = { 'unquad', 'scotch', 'eye', 'fog', 'fullsize', 'kill', 'wipe', 'round', 'edit', 'save', 'always', 'close' } 
+  end
   end
 
 return Map

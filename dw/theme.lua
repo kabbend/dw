@@ -62,6 +62,7 @@ theme.iconMagic		= love.graphics.newImage( "icons/magic32x32.png" )
 theme.iconSuccess	= love.graphics.newImage( "icons/success32x32.png" )
 theme.iconEditOff	= love.graphics.newImage( "icons/edit32x32.png" )
 theme.iconEditOn	= love.graphics.newImage( "icons/edit-red32x32.png" )
+theme.iconSave		= love.graphics.newImage( "icons/save32x32.png" )
 
 theme.imageTailler	= love.graphics.newImage( "images/tailler.png")
 theme.imageSalve	= love.graphics.newImage( "images/salve.png")

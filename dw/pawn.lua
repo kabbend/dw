@@ -20,6 +20,7 @@ function Pawn:new( id, snapshot, width , x, y )
   new.moveToX, new.moveToY = new.x, new.y 	-- destination of a move 
   new.snapshot = snapshot
   new.sizex = width 				-- width size of the image in pixels, for map at scale 1
+  new.inEditionMode = false
   local w,h = new.snapshot.w, new.snapshot.h
   new.sizey = new.sizex * (h/w) 
   local f1,f2 = new.sizex/w, new.sizey/h

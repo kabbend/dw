@@ -535,7 +535,8 @@ function love.mousereleased( x, y )
 	-- we were resizing a text (within a Map). We stop now
 	if resizeText then
 		resizeText = false
-		if w then w:saveText() end
+		--if w then w:saveText() end
+		if w then w:textChanged() end
 		return
 	end
 
@@ -561,7 +562,8 @@ function love.mousereleased( x, y )
 				
 			end
 			-- in both cases, we save the text/edges associated to that Map
-			map:saveText()
+			-- map:saveText()
+			map:textChanged()
 		end
 		-- in any case...
 		arrowMode = false
@@ -1525,11 +1527,30 @@ function init()
 
     -- Some Maps might have associated text, load them
     for i=1,#layout.snapshotWindow.snapshots[2].s do
-	io.write("Looking text for '" .. layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua'\n")
-	if textDict[ layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua" ] then
-		layout.snapshotWindow.snapshots[2].s[i].nodes, layout.snapshotWindow.snapshots[2].s[i].edges = 
-			textDict[ layout.snapshotWindow.snapshots[2].s[i].displayFilename .. ".lua" ]()
-		io.write("Got it. Loading " .. #layout.snapshotWindow.snapshots[2].s[i].nodes .. " nodes and " .. #layout.snapshotWindow.snapshots[2].s[i].edges .. " edges.\n")
+
+	local map  = layout.snapshotWindow.snapshots[2].s[i]
+	if textDict[ map.displayFilename .. ".lua" ] then
+
+		map.nodes, map.edges, map.tempPawns = textDict[ map.displayFilename .. ".lua" ]()
+	
+		io.write("Got Map data for " .. map.displayFilename .. ". Loading " .. #map.nodes .. " nodes and " .. #map.edges .. " edges.\n")
+
+		if map.tempPawns then -- might happen with older files
+		 map.basePawnSize = map.tempPawns[1]
+		 if #map.tempPawns[2] > 0 then
+			-- we have pawns to create
+			for j=1,#map.tempPawns[2] do
+				local id = rpg.generateNewPNJ( map.tempPawns[2][j].class )
+                  		local p = map:createPawns(0,0,0,id)  -- we create it at 0,0, and translate it afterwards
+                  		if p then
+					p.x, p.y = map.tempPawns[2][j].x , map.tempPawns[2][j].y
+					p.inEditionMode = true -- so they can be saved again if applicable
+					io.write("Loading Pawns : Class '" .. map.tempPawns[2][j].class .. "' with id " .. id .. "\n")
+                        	end
+
+			end
+		 end
+		end
 	end
     end
  
