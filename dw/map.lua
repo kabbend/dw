@@ -440,113 +440,6 @@ function Map:draw()
        love.graphics.setStencilTest()
      end
 
-     -- print texts
-     if self.isEditing then
-
-	love.graphics.setLineWidth( 2 )
-
-       		-- draw edges first     
-     		for j=1,#self.nodes do
-			for k=1,#self.edges do
-				local edge = self.edges[k]
-				if edge.id1 == self.nodes[j].id or edge.id2 == self.nodes[j].id then
-
-				local id1, id2 = edge.id1, edge.id2
-				local node1, node2 = self:findNodeById(id1), self:findNodeById(id2) 
-
-				local nx1, ny1 = node1.x , node1.y 
-				local width1, height1 = node1.w, node1.h
-				nx1, ny1 = nx1 / MAG , ny1 / MAG
-				width1, height1 = width1 / MAG, height1 / MAG
-				--if not node1.hide and x + nx1 + width1 > 0 and x + nx1 < self.w and y + ny1 > 0 and y + ny1 < self.h then 
-					-- we draw that node, it's inside map limits
-					--node1.done = true
-				--end
-
-				local nx2, ny2 = node2.x , node2.y 
-				local width2, height2 = node2.w, node2.h
-				nx2, ny2 = nx2 / MAG , ny2 / MAG
-				width2, height2 = width2 / MAG, height2 / MAG
-				--if not node2.hide and x + nx2 + width2 > 0 and x + nx2 < self.w and y + ny2 > 0 and y + ny2 < self.h then 
-					-- we draw that node, it's inside map limits
-					--node2.done = true
-				--end
-				--[[	
-				if node1.done then
-    	  				love.graphics.setColor(0,0,0)
-    	  				love.graphics.rectangle("line",x+nx1, y+ny1+1,width1 ,height1,5,5 )	
-    	  				love.graphics.setColor(unpack(node1.backgroundColor))
-    	  				love.graphics.rectangle("fill",x+nx1, y+ny1+1,width1 ,height1,5,5 )	
-    	  				love.graphics.setColor(unpack(node1.color))
-	  				love.graphics.setFont( fonts[fontSize] )
-	  				love.graphics.printf( node1.text, x+nx1, y+ny1+1, width1 , "left" )
-				end
-
-				if node2.done then
-    	  				love.graphics.setColor(0,0,0)
-    	  				love.graphics.rectangle("line",x+nx2, y+ny2+1,width2 ,height2,5,5 )	
-    	  				love.graphics.setColor(unpack(node2.backgroundColor))
-    	  				love.graphics.rectangle("fill",x+nx2, y+ny2+1,width2 ,height2,5,5 )	
-    	  				love.graphics.setColor(unpack(node2.color))
-	  				love.graphics.setFont( fonts[fontSize] )
-	  				love.graphics.printf( node2.text, x+nx2, y+ny2+1, width2 , "left" )
-				end
-				--]]
-				-- draw the edge if the 2 nodes are visible
-				--if node1.done and node2.done then
-					local sx1, sy1 = x+nx1+width1/2, y+ny1+height1/2
-					local sx2, sy2 = x+nx2+width2/2, y+ny2+height2/2
-    	  				love.graphics.setColor(theme.color.red)
-					love.graphics.line(sx1,sy1,sx2,sy2)
-				--end
-				--[[
-				-- mark both nodes as done, so we don't manage them anymore in that cycle
-				node1.done = true
-				node2.done = true
-				--]]
-				end -- if edge
-
-			end -- for edges
-     		end -- loop edges
-
-       		-- then draw remaining nodes
-     		for j=1,#self.nodes do
-
-			--if not self.nodes[j].done and not self.nodes[j].hide then
-			if not self.nodes[j].hide then
-				local nx, ny = self.nodes[j].x , self.nodes[j].y 
-				local width, height = self.nodes[j].w, self.nodes[j].h
-				nx, ny = nx / MAG , ny / MAG
-				width, height = width / MAG, height / MAG
-				if x + nx + width > 0 and x + nx < self.w and y + ny + height > 0 and y + ny < self.h then 
-					local font = nil
-					if self.nodes[j].bold then
-						font = fontsBold
-					else
-						font = fonts
-					end
-    	  				love.graphics.setColor(0,0,0)
-    	  				love.graphics.rectangle("line",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
-    	  				love.graphics.setColor(unpack(self.nodes[j].backgroundColor))
-    	  				love.graphics.rectangle("fill",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
-    	  				love.graphics.setColor(0,0,0)
-    	  				love.graphics.line(x+nx+width-3,y+ny,x+nx+width-3,y+ny+height)	
-  					local fontSize = math.floor(((self.nodes[j].fontSize or DEFAULT_FONT_SIZE ) / MAG)+0.5)
-  					if fontSize >= MIN_FONT_SIZE and fontSize <= MAX_FONT_SIZE then  -- don't print if too small or too big...
-    	  				  love.graphics.setColor(unpack(self.nodes[j].color))
-	  				  love.graphics.setFont( font[fontSize] )
-	  				  love.graphics.printf( self.nodes[j].text, math.floor(x+nx), math.floor(y+ny), math.floor(width) , "left" )
-					end
-	  			end
-			end
-     		end -- loop nodes
-
-		-- now all nodes are drawn, reset them for next cycle
-     		for j=1,#self.nodes do self.nodes[j].done = false end
-	
-	love.graphics.setLineWidth( 1 )
-
-     end -- isEditing
 
      -- draw pawns, if any
      if map.pawns then
@@ -614,27 +507,77 @@ function Map:draw()
 	     end
      end
 
-     -- print visible
-     --[[ 
-     if atlas:isVisible( map ) then
-	local char = "V" -- a priori
-	if map.sticky then char = "S" end -- stands for S(ticky)
-        love.graphics.setColor(200,0,0,180)
-        love.graphics.setFont(theme.fontDice)
-	local fx = math.max( x , 0 )
-	local fy = math.max( y + (20/map.mag), 0 )
-	love.graphics.print( char , fx , fy , 0, 2/map.mag, 2/map.mag) -- bigger letters
-     end
-     -- print search zone if scenario
-     if self.kind == "scenario" then
-      	love.graphics.setColor(0,0,0)
-      	love.graphics.setFont(theme.fontSearch)
-      	love.graphics.printf(text, 800, H - 60, 400)
-      	-- print number of the search result is needed
-      	if searchIterator then love.graphics.printf( "( " .. searchIndex .. " [" .. string.format("%.2f", searchPertinence) .. "] out of " .. 
-						           searchSize .. " )", 800, H - 40, 400) end
-      end
-     --]]
+     -- print texts
+     if self.isEditing then
+
+	love.graphics.setLineWidth( 2 )
+
+       		-- draw edges first     
+     		for j=1,#self.nodes do
+			for k=1,#self.edges do
+				local edge = self.edges[k]
+				if edge.id1 == self.nodes[j].id or edge.id2 == self.nodes[j].id then
+
+				local id1, id2 = edge.id1, edge.id2
+				local node1, node2 = self:findNodeById(id1), self:findNodeById(id2) 
+
+				local nx1, ny1 = node1.x , node1.y 
+				local width1, height1 = node1.w, node1.h
+				nx1, ny1 = nx1 / MAG , ny1 / MAG
+				width1, height1 = width1 / MAG, height1 / MAG
+
+				local nx2, ny2 = node2.x , node2.y 
+				local width2, height2 = node2.w, node2.h
+				nx2, ny2 = nx2 / MAG , ny2 / MAG
+				width2, height2 = width2 / MAG, height2 / MAG
+
+				local sx1, sy1 = x+nx1+width1/2, y+ny1+height1/2
+				local sx2, sy2 = x+nx2+width2/2, y+ny2+height2/2
+    	  			love.graphics.setColor(theme.color.red)
+				love.graphics.line(sx1,sy1,sx2,sy2)
+				end 
+
+			end -- for edges
+     		end -- loop edges
+
+       		-- then draw nodes
+     		for j=1,#self.nodes do
+
+			--if not self.nodes[j].done and not self.nodes[j].hide then
+			if not self.nodes[j].hide then
+				local nx, ny = self.nodes[j].x , self.nodes[j].y 
+				local width, height = self.nodes[j].w, self.nodes[j].h
+				nx, ny = nx / MAG , ny / MAG
+				width, height = width / MAG, height / MAG
+				if x + nx + width > 0 and x + nx < self.w and y + ny + height > 0 and y + ny < self.h then 
+					local font = nil
+					if self.nodes[j].bold then
+						font = fontsBold
+					else
+						font = fonts
+					end
+    	  				love.graphics.setColor(0,0,0)
+    	  				love.graphics.rectangle("line",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
+    	  				love.graphics.setColor(unpack(self.nodes[j].backgroundColor))
+    	  				love.graphics.rectangle("fill",x+nx-2, y+ny-2,width+4 ,height+4,5,5 )	
+    	  				love.graphics.setColor(0,0,0)
+    	  				love.graphics.line(x+nx+width-3,y+ny,x+nx+width-3,y+ny+height)	
+  					local fontSize = math.floor(((self.nodes[j].fontSize or DEFAULT_FONT_SIZE ) / MAG)+0.5)
+  					if fontSize >= MIN_FONT_SIZE and fontSize <= MAX_FONT_SIZE then  -- don't print if too small or too big...
+    	  				  love.graphics.setColor(unpack(self.nodes[j].color))
+	  				  love.graphics.setFont( font[fontSize] )
+	  				  love.graphics.printf( self.nodes[j].text, math.floor(x+nx), math.floor(y+ny), math.floor(width) , "left" )
+					end
+	  			end
+			end
+     		end -- loop nodes
+
+		-- now all nodes are drawn, reset them for next cycle
+     		for j=1,#self.nodes do self.nodes[j].done = false end
+	
+	love.graphics.setLineWidth( 1 )
+
+     end -- isEditing
 
     love.graphics.setScissor() 
 
@@ -691,7 +634,7 @@ function Map:draw()
 	self.showIconsTimer = 0 
     end
 
-   -- text edition
+   -- text zone edition
    if self.isEditing and self.wText.selected then
 	self.wText:draw()
    end
