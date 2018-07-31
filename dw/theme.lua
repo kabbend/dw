@@ -3,8 +3,20 @@ local theme = {}
 
 theme.iconSize = 32 
 theme.size= 19 		-- base font size
-theme.color = { masked = {220,240,210}, black = {0,0,0}, red = {250,80,80}, darkblue = {66,66,238}, purple = {127,0,255}, selected = {0,128,128}, 
-  orange = {255,165,0},   darkgreen = {0,102,0},   white = {255,255,255} , green = {0,240,0} , darkgrey = {96,96,96} , grey = { 211, 211, 211} } 
+theme.color = { 
+	black = {0,0,0}, 
+	darkblue = {66,66,238}, 
+	darkgreen = {0,102,0},   
+	darkgrey = {96,96,96} , 
+	green = {0,240,0} , 
+	grey = { 211, 211, 211} ,
+	masked = {220,240,210}, 
+  	orange = {255,165,0},   
+	purple = {127,0,255}, 
+	red = {250,80,80}, 
+	selected = {0,128,128}, 
+	white = {255,255,255} , 
+	} 
 
 theme.fontTitle 	= love.graphics.newFont("yui/yaoui/fonts/georgia.ttf",20)
 theme.fontDice 		= love.graphics.newFont("yui/yaoui/fonts/georgia.ttf",90)
@@ -63,21 +75,6 @@ theme.iconSuccess	= love.graphics.newImage( "icons/success32x32.png" )
 theme.iconEditOff	= love.graphics.newImage( "icons/edit32x32.png" )
 theme.iconEditOn	= love.graphics.newImage( "icons/edit-red32x32.png" )
 theme.iconSave		= love.graphics.newImage( "icons/save32x32.png" )
-
-theme.imageTailler	= love.graphics.newImage( "images/tailler.png")
-theme.imageSalve	= love.graphics.newImage( "images/salve.png")
-theme.imageDefendre	= love.graphics.newImage( "images/defendre.png")
-theme.imageDiscerner	= love.graphics.newImage( "images/discerner.png")
-theme.imageEtaler	= love.graphics.newImage( "images/etaler.png")
-theme.imageDefier	= love.graphics.newImage( "images/defier.png")
-theme.imageAider	= love.graphics.newImage( "images/aider.png")
-theme.imageNegocier	= love.graphics.newImage( "images/negocier.png")
-theme.imageCamp		= love.graphics.newImage( "images/camp.png")
-theme.imageRecuperer	= love.graphics.newImage( "images/recuperer.png")
-theme.imageNiveau	= love.graphics.newImage( "images/niveau.png")
-theme.imageSession	= love.graphics.newImage( "images/session.png")
-theme.imageSoupir	= love.graphics.newImage( "images/soupir.png")
-theme.imageFail		= love.graphics.newImage( "images/fail.png" )
 
 return theme
 

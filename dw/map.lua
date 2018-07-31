@@ -543,7 +543,6 @@ function Map:draw()
        		-- then draw nodes
      		for j=1,#self.nodes do
 
-			--if not self.nodes[j].done and not self.nodes[j].hide then
 			if not self.nodes[j].hide then
 				local nx, ny = self.nodes[j].x , self.nodes[j].y 
 				local width, height = self.nodes[j].w, self.nodes[j].h
@@ -572,9 +571,6 @@ function Map:draw()
 			end
      		end -- loop nodes
 
-		-- now all nodes are drawn, reset them for next cycle
-     		for j=1,#self.nodes do self.nodes[j].done = false end
-	
 	love.graphics.setLineWidth( 1 )
 
      end -- isEditing

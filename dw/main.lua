@@ -811,6 +811,7 @@ function love.mousereleased( x, y )
 	else 
 		-- not drawing a mask, so maybe selecting a PNJ
 	   	-- depending on position on y-axis
+		--[[
   	  	for i=1,#PNJTable do
     		  if (y >= PNJtext[i].y-5 and y < PNJtext[i].y + 42) then
       			-- this stops the arrow mode
@@ -824,6 +825,7 @@ function love.mousereleased( x, y )
       			end
     		  end
 		end	
+		--]]
 
 	end
 
@@ -1045,28 +1047,14 @@ if textActiveCopyCallback 	and key == "c" 	and love.keyboard.isDown(keyPaste) th
 if not initialized then return end
 
 -- keys applicable in any context
--- we expect:
--- 'lctrl + d' : open dialog window
--- 'lctrl + f' : open setup window
--- 'lctrl + h' : open help window
--- 'lctrl + g' : open graph scenario window
--- 'lctrl + r' : restore all windows to initial state
--- 'lctrl + tab' : give focus to the next window if any
--- 'escape' : hide or restore all windows 
-
--- 'lctrl + b' : display bar (snapshots) window 
--- 'lctrl + p' : display projector window 
+-- we manage:
+-- 'lctrl + tab' : 	give focus to the next window if any
+-- 'lctrl + p' : 	display projector window 
+-- 'lctrl + f' :	open setup window
+-- 'lctrl + g' : 	open global scenario window
 
 if key == "g" and love.keyboard.isDown("lctrl") then
   if layout.sWindow then layout:toggleWindow( layout.sWindow ) end
-  return
-end
-if key == "d" and love.keyboard.isDown("lctrl") then
-  layout:toggleWindow( layout.dialogWindow )
-  return
-end
-if key == "h" and love.keyboard.isDown("lctrl") then 
-  layout:toggleWindow( layout.helpWindow )
   return
 end
 if key == "f" and love.keyboard.isDown("lctrl") then 
@@ -1078,43 +1066,22 @@ if key == "p" and love.keyboard.isDown("lctrl") then
   layout:setFocus( layout.pWindow )
   return
 end
-if key == "escape" then
-	layout:toggleDisplay()
-	return
-end
 if key == "tab" and love.keyboard.isDown("lctrl") then
-	layout:nextWindow()
-	return
-end
-if key == "r" and love.keyboard.isDown("lctrl") then
-	if layout.actionWindow.open then
-		layout:hideAll()	
-		layout:restoreBase(layout.pWindow)
-		layout:restoreBase(layout.snapshotWindow)
-	elseif layout.storyWindow.open then
-		layout:hideAll()	
-		layout:restoreBase(layout.pWindow)
-		layout:restoreBase(layout.snapshotWindow)
-		layout:restoreBase(layout.scenarioWindow)
-	end
+  layout:nextWindow()
+  return
 end
 
 -- other keys applicable 
 local window = layout:getFocus()
 
 if window then
-  -- a window is selected. Keys applicable to any window:
-  --[[ 'lctrl + C' : recenter window ]]
+
   -- 'lctrl + x' : close window
   if not window.alwaysVisible and inTable(window.buttons,'close') and key == "x" and love.keyboard.isDown("lctrl") then
 	layout:setDisplay( window, false )
 	return
   end
-  if key == "c" and love.keyboard.isDown("lctrl")
-  and love.keyboard.isDown("lshift") then
-	window:move( window.w / 2, window.h / 2 )
-	return
-  end
+
   if window.class == "snapshot" then
   
   	-- 'space' to change snapshot list
@@ -1127,14 +1094,11 @@ if window then
 
 	local map = window
 
-	-- keys for map. We expect:
+	-- keys for map. We manage:
 	-- Zoom in and out
-	-- 'tab' to get to circ or rect mode
-	-- 'lctrl + p' : remove all pawns
-	-- 'lctrl + v' : toggle visible / not visible
-	-- 'lctrl + z' : zoom in / out
-	-- 'lctrl + s' : stick map
-	-- 'lctrl + u' : unstick map
+	-- 'lctrl + b' : if we edit a text, toggle Bold 
+	-- 'lctrl + a' : if we adit a text, decrease font size 
+	-- 'lctrl + z' : if we edit a text, increase font size
 
   	if key == "b" and love.keyboard.isDown("lctrl") and map.wText.selected then
 		map.wText.bold = not map.wText.bold
@@ -1151,51 +1115,16 @@ if window then
 		return
   	end
 
-  	if key == "s" and love.keyboard.isDown("lctrl") then
-		map:sticky()
-		return
-  	end
-
-  	if key == "u" and love.keyboard.isDown("lctrl") then
-		map:unsticky()
-		return
-	end
-
-    	if key == keyZoomIn then
+    	if key == keyZoomIn and not map.wText.selected then
 		ignoreLastChar = true
 		map:zoom( 1 )
     	end 
 
-    	if key == keyZoomOut then
+    	if key == keyZoomOut and not map.wText.selected then
 		ignoreLastChar = true
 		map:zoom( -1 )
     	end 
     
-	if key == "v" and love.keyboard.isDown("lctrl") then
-		if not map.scenariofile then -- it's not a scenario map
-		  atlas:toggleVisible( map )
-		  if not atlas:isVisible( map ) then map.sticky = false else 
-		    layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is now visible to players. All your changes will be relayed to them")
-		    if not map.mask or #map.mask <= 1 then
-		      layout.notificationWindow:addMessage("Map '" .. map.displayFilename .. "' is fully covered by Fog of War. Players will see nothing !")
-		    end
-		  end
-		end
-    	end
-
-   	if key == "p" and love.keyboard.isDown("lctrl") then
-	   map.pawns = {} 
-	   map.basePawnSize = nil
-	   tcpsend( projector, "ERAS" )    
-   	end
-   	if key == "z" and love.keyboard.isDown("lctrl") then
-		map:fullSize()
-	end
-
-   	if key == "tab" then
-	  if maskType == "RECT" then maskType = "CIRC" else maskType = "RECT" end
-   	end
-	
   end
   end
 
@@ -1368,6 +1297,22 @@ function init()
       fontsBold[i] = love.graphics.newFont("yui/yaoui/fonts/PlayfairDisplay-Bold.otf",i)
       fontsBold[i]:setFilter( "nearest", "nearest" )
     end
+
+    -- load rules images
+   rules["tailler"] 	= Snapshot:new{ file = love.filesystem.newFile("images/tailler.png") , size=layout.snapshotSize }
+   rules["salve"] 	= Snapshot:new{ file = love.filesystem.newFile("images/salve.png") , size=layout.snapshotSize }
+   rules["defendre"] 	= Snapshot:new{ file = love.filesystem.newFile("images/defendre.png") , size=layout.snapshotSize }
+   rules["discerner"] 	= Snapshot:new{ file = love.filesystem.newFile("images/discerner.png") , size=layout.snapshotSize }
+   rules["etaler"] 	= Snapshot:new{ file = love.filesystem.newFile("images/etaler.png") , size=layout.snapshotSize }
+   rules["defier"] 	= Snapshot:new{ file = love.filesystem.newFile("images/defier.png") , size=layout.snapshotSize }
+   rules["aider"] 	= Snapshot:new{ file = love.filesystem.newFile("images/aider.png") , size=layout.snapshotSize }
+   rules["negocier"] 	= Snapshot:new{ file = love.filesystem.newFile("images/negocier.png") , size=layout.snapshotSize }
+   rules["camp"]	= Snapshot:new{ file = love.filesystem.newFile("images/camp.png") , size=layout.snapshotSize }
+   rules["recuperer"]	= Snapshot:new{ file = love.filesystem.newFile("images/recuperer.png") , size=layout.snapshotSize }
+   rules["niveau"]	= Snapshot:new{ file = love.filesystem.newFile("images/niveau.png") , size=layout.snapshotSize }
+   rules["session"]	= Snapshot:new{ file = love.filesystem.newFile("images/session.png") , size=layout.snapshotSize }
+   rules["soupir"]	= Snapshot:new{ file = love.filesystem.newFile("images/soupir.png") , size=layout.snapshotSize }
+   rules["fail"]	= Snapshot:new{ file = love.filesystem.newFile("images/fail.png") , size=layout.snapshotSize }
 
     -- create basic windows
     local pWindow = projectorWindow:new{ w=layout.W1, h=layout.H1, x=-(layout.WC+layout.intW+3)+layout.W/2,
@@ -1553,7 +1498,7 @@ function init()
 		end
 	end
     end
- 
+
 end
 
 --
