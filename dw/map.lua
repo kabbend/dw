@@ -591,11 +591,22 @@ function Map:draw()
 	-- we are hovering the popup zone of a pawn 
 	-- Show popup now if there is a popup associated with that Pawn
  	local i = findPNJ( p.id )
-	if i and PNJTable[ i ].snapshotPopup then		
+	if i then
+
+	  if x + PNJTable[ i ].snapshotPopup.w > W then x = (W - PNJTable[ i ].snapshotPopup.w) end
+	  if y + PNJTable[ i ].snapshotPopup.h > H then y = (H - PNJTable[ i ].snapshotPopup.h) end
+
+	  if PNJTable[ i ].snapshotPopup then		
 		-- compute x,y to show the popup window so it does not exceed the window limits
-		if x + PNJTable[ i ].snapshotPopup.w > W then x = (W - PNJTable[ i ].snapshotPopup.w) end
-		if y + PNJTable[ i ].snapshotPopup.h > H then y = (H - PNJTable[ i ].snapshotPopup.h) end
 		love.graphics.draw( PNJTable[ i ].snapshotPopup.im , x, y )
+	  end
+
+	  if PNJTable[ i ].trait then
+		love.graphics.setColor( theme.color.white )
+		love.graphics.rectangle( "fill", x , y - 30 , PNJTable[ i ].snapshotPopup.w  , 30 )
+		love.graphics.setColor( theme.color.black )
+		love.graphics.printf( PNJTable[ i ].trait , x , y - 30 , PNJTable[ i ].snapshotPopup.w  , "left")
+	  end
 	end
      end   
 
@@ -933,11 +944,13 @@ function Map:click(x,y)
 				table.insert( self.nodes , justSaved )
 			elseif n then
 				-- text is empty and we just removed the node, maybe we should remove edges as well
+				local newedges = {}
 				for j=1,#self.edges do
-				  if self.edges[j].id1 == self.wText.id or self.edges[j].id2 == self.wText.id then
-					table.remove( self.edges , j )
+				  if self.edges[j].id1 ~= self.wText.id and self.edges[j].id2 ~= self.wText.id then
+					table.insert( newedges, self.edges[j] )
 				  end
 				end
+				self.edges = newedges
 			end
 			-- don't edit text zone anymore
 			self.wText:unselect()		

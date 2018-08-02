@@ -1506,6 +1506,8 @@ end
 --
 function love.load( args )
 
+    math.randomseed( os.time() )
+
     -- load config file
     dofile( "dwconf.lua" )    
 
@@ -1541,8 +1543,6 @@ function love.load( args )
       layout:addWindow( dataWindow , true, "dataWindow" )
       initialized = false
     end
-
-    math.randomseed( os.time() )
 
     end
 

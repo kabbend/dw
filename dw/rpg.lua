@@ -1,13 +1,13 @@
 
-local theme = require 'theme'
-local partial = require 'partial'
-local partialS = require 'partialS'
-local fail = require 'fail'
-local danger = require 'danger'
-local names = require 'names'
-local magic = require 'magic'
-local potions = require 'potions'
-
+local theme 	= require 'theme'
+local partial 	= require 'partial'
+local partialS 	= require 'partialS'
+local fail 	= require 'fail'
+local danger 	= require 'danger'
+local names 	= require 'names'
+local magic 	= require 'magic'
+local potions 	= require 'potions'
+local trait 	= require 'trait'
 --
 -- code related to the RPG itself (here, Fading Suns)
 -- how do we roll dices, how to we inflict damages, etc.
@@ -62,22 +62,22 @@ function rpg.hitPNJ( i )
 -- return an iterator which generates new unique ID, 
 -- from "A", "B" ... thru "Z", then "AA", "AB" etc.
 local function UIDiterator() 
-  local UID = ""
-  local incrementAlphaID = function ()
-    if UID == "" then UID = "A" return UID end
-    local head=UID:sub( 1, UID:len() - 1)
-    local tail=UID:byte( UID:len() )
-    local id
+  UID = ""
+  incrementID = function (id)
+    if id == "" then return "A" end
+    local head=string.sub(id, 1, string.len(id) - 1)
+    local tail=string.byte(id, string.len(id) )
     if (tail == 90) then 
-	local u = UIDiterator()
-	id = u(head) .. "A" 
+	return incrementID(head)  .. "A" 
     else 
-	id = head .. string.char(tail+1) 
+	return head .. string.char(tail+1) 
     end
-    UID = id
+    end
+  incrementAlpha = function()
+    UID = incrementID(UID)
     return UID
     end
-  return incrementAlphaID 
+  return incrementAlpha 
   end
 
 -- some initialization stuff
@@ -130,6 +130,10 @@ local function PNJConstructor( template )
   aNewPNJ.attackers    	= {}				-- list of IDs of all opponents attacking him 
 
   aNewPNJ.hits        	= aNewPNJ.endurance 
+
+  if template.trait then
+	aNewPNJ.trait = trait [ math.random( #trait ) ]
+  end
 
   return aNewPNJ
   
@@ -233,6 +237,10 @@ function rpg.getPotion()
 
 function rpg.getDanger()
     return danger[ math.random(#danger) ]
+    end
+
+function rpg.getTrait()
+    return trait[ math.random(#trait) ]
     end
 
 function rpg.getName()
