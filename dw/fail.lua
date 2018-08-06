@@ -15,6 +15,12 @@ local fail = {
 "Infligez des dégâts",
 "Infligez des dégâts",
 "Infligez des dégâts",
+"Infligez des dégâts",
+"Infligez des dégâts",
+"Infligez des dégâts",
+"Infligez des dégâts",
+"Infligez des dégâts",
+"Infligez des dégâts",
 }
 
 return fail

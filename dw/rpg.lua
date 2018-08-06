@@ -98,7 +98,8 @@ local function PNJConstructor( template )
   aNewPNJ.popup	  	  = template.popup or ''	-- popup image (and some other information) for the character 
   aNewPNJ.snapshot	  = template.snapshot		-- image (and some other information) for the character 
   aNewPNJ.snapshotPopup	  = template.snapshotPopup	-- image (and some other information) for the character 
-  aNewPNJ.sizefactor	  = template.size or 1.0
+  aNewPNJ.sizefactor	  = template.size or 1.0	-- snapshot size factor
+  aNewPNJ.major	  	  = template.major		-- is it a major PNJ ? 
 
   aNewPNJ.ip	  	  = nil				-- for PJ only: ip, if the player is using udp remote communication 
   aNewPNJ.port	  	  = nil				-- for PJ only: port, if the player is using udp remote communication 
@@ -112,16 +113,7 @@ local function PNJConstructor( template )
 
   -- BASE CHARACTERISTICS
   aNewPNJ.class	      	= template.class or ""
-  aNewPNJ.intelligence 	= template.intelligence or 3
-  aNewPNJ.perception   	= template.perception or 3
   aNewPNJ.endurance    	= template.endurance or 5    
-  aNewPNJ.dex          	= template.dex or 5     	-- Characteristic DEXTERITY
-
-  aNewPNJ.fight        	= template.fight or 5        
-  	-- 'fight' is a generic skill that represents all melee/missile capabilities at the same time
-  	-- here we avoid managing separate and detailed skills depending on each weapon...
-
-  aNewPNJ.weapon    	= template.weapon or ""
   aNewPNJ.dmg          	= template.dmg or 2		-- default damage is 2 (handfight)
   aNewPNJ.armor        	= template.armor or 1      	-- number of dices (eg 1 means 1D armor)
 

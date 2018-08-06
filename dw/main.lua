@@ -26,6 +26,7 @@ local projectorWindow		= require 'projector'		-- project images to players
 local snapshotBar		= require 'snapshot'		-- all kinds of images 
 local Map			= require 'map'			-- maps 
 local urlWindow			= require 'urlWindow'		-- provide an URL to load 
+local rulesWindow		= require 'rules'		--  
 
 -- specific object classes
 local Snapshot			= require 'snapshotClass'	-- store and display one image 
@@ -978,7 +979,7 @@ elseif mouseResize then
 	-- check we are still within the window limits
 	if x >= zx + 40 and y >= zy +40 then
 		if w.whResizable then
-		  assert(w.class == "map")
+		  --assert(w.class == "map")
 		  --local ratio = w.w / w.h
 		  local projected = (x - mx)+(y - my)
 		  local neww= w.w + projected * w.mag
@@ -991,7 +992,7 @@ elseif mouseResize then
 		  if w.quad then _,_,originalw, originalh = w.quad:getViewport() end
 		  local oldmag = originalw / w.w
 		  local newmag = originalw / neww
-		  if w.class == "map" then 
+		  if w.class == "map" or w.class == "rules" then 
 			w.mag = w.mag + (newmag - oldmag) 
 			local cx,cy = w:WtoS(0,0)
 			w:translate(zx-cx,zy-cy)
@@ -1050,6 +1051,7 @@ if not initialized then return end
 -- we manage:
 -- 'lctrl + tab' : 	give focus to the next window if any
 -- 'lctrl + p' : 	display projector window 
+-- 'lctrl + c' : 	display combat (rules) window 
 -- 'lctrl + f' :	open setup window
 -- 'lctrl + g' : 	open global scenario window
 
@@ -1064,6 +1066,11 @@ end
 if key == "p" and love.keyboard.isDown("lctrl") then 
   layout:setDisplay( layout.pWindow, true )
   layout:setFocus( layout.pWindow )
+  return
+end
+if key == "c" and love.keyboard.isDown("lctrl") then 
+  layout:toggleWindow( layout.rulesWindow )
+  if layout:getDisplay( layout.rulesWindow ) then layout:setFocus( layout.rulesWindow ) end
   return
 end
 if key == "tab" and love.keyboard.isDown("lctrl") then
@@ -1335,6 +1342,8 @@ function init()
 
     local actionsWindow = actionsBar:new{w=(32+2)*7,h=(32+2)*2,x=200,y=140,layout=layout}
 
+    local rulesWindow = rulesWindow:new{w=957,h=537,x=250,y=150,layout=layout}
+
     local dataWindow = setupWindow:new{ w=600, h=400, x=300,y=layout.H/2-100, init=true,layout=layout} 
 
     local snapshotWindow = snapshotBar:new{ w=layout.W-6*layout.intW, h=layout.snapshotSize+2, x=-layout.intW+layout.W/2, 
@@ -1344,6 +1353,7 @@ function init()
     -- do not display them yet
     -- basic windows (as opposed to maps, for instance) are also stored by name, so we can retrieve them easily elsewhere in the code
     layout:addWindow( pWindow , 	true, "pWindow" )
+    layout:addWindow( rulesWindow , 	true, "rulesWindow" )
     layout:addWindow( snapshotWindow , 	true, "snapshotWindow" )
     layout:addWindow( actionsWindow , 	true, "actionsWindow" )
     layout:addWindow( notifWindow , 	false, "notificationWindow" )
@@ -1451,6 +1461,8 @@ function init()
     function compare(x, y)
       if x[1].PJ and not y[1].PJ then return true end
       if not x[1].PJ and y[1].PJ then return false end
+      if x[1].major and not y[1].major then return true end
+      if not x[1].major and y[1].major then return false end
       return x[1].class < y[1].class 
     end
 

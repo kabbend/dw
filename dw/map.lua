@@ -593,11 +593,10 @@ function Map:draw()
  	local i = findPNJ( p.id )
 	if i then
 
-	  if x + PNJTable[ i ].snapshotPopup.w > W then x = (W - PNJTable[ i ].snapshotPopup.w) end
-	  if y + PNJTable[ i ].snapshotPopup.h > H then y = (H - PNJTable[ i ].snapshotPopup.h) end
-
 	  if PNJTable[ i ].snapshotPopup then		
 		-- compute x,y to show the popup window so it does not exceed the window limits
+	  	if x + PNJTable[ i ].snapshotPopup.w > W then x = (W - PNJTable[ i ].snapshotPopup.w) end
+	  	if y + PNJTable[ i ].snapshotPopup.h > H then y = (H - PNJTable[ i ].snapshotPopup.h) end
 		love.graphics.draw( PNJTable[ i ].snapshotPopup.im , x, y )
 	  end
 

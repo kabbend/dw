@@ -76,5 +76,7 @@ theme.iconEditOff	= love.graphics.newImage( "icons/edit32x32.png" )
 theme.iconEditOn	= love.graphics.newImage( "icons/edit-red32x32.png" )
 theme.iconSave		= love.graphics.newImage( "icons/save32x32.png" )
 
+theme.imageRules	= love.graphics.newImage( "images/rules.png" )
+
 return theme
 
